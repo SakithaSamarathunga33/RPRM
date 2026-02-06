@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const { logAudit } = require('../models/Audit');
+const { createJwt } = require('../jwtAuth');
 
 exports.login = async (req, res) => {
     try {
@@ -35,9 +36,11 @@ exports.login = async (req, res) => {
                     User.updateLastLogin(user.id);
                     logAudit(user.id, user.username, 'LOGIN');
 
+                    const sessionToken = createJwt({ id: user.id, username: user.username, full_name: user.full_name, role: user.role });
                     res.json({
                         success: true,
-                        user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role }
+                        user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role },
+                        ...(sessionToken && { sessionToken })
                     });
                 });
             });

@@ -3,10 +3,11 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const { createSessionStore } = require('./sessionManager');
+const { verifyJwt } = require('./jwtAuth');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.use(cors({
     origin: ['https://rprm-production.up.railway.app', 'http://localhost:3000'],
@@ -46,6 +47,22 @@ app.use(session({
         // Don't set domain - let browser handle it for cross-origin cookies
     }
 }));
+
+// Allow auth via JWT Bearer token (fixes Chrome cross-origin cookie blocking)
+app.use((req, res, next) => {
+    if (req.session.user_id) return next();
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) return next();
+    const payload = verifyJwt(token);
+    if (payload) {
+        req.session.user_id = payload.userId;
+        req.session.username = payload.username;
+        req.session.full_name = payload.full_name;
+        req.session.role = payload.role;
+    }
+    next();
+});
 
 const routes = require('./routes/index');
 app.use('/api', routes);

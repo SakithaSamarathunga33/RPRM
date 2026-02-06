@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession, login } from '@/lib/api';
+import { getSession, login, setSessionToken } from '@/lib/api';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -23,8 +23,10 @@ export default function LoginPage() {
         }
         try {
             const d = await login(username, password);
-            if (d.success) router.push('/dashboard');
-            else setError(d.error || 'Login failed');
+            if (d.success) {
+                if (d.sessionToken) setSessionToken(d.sessionToken);
+                router.push('/dashboard');
+            } else setError(d.error || 'Login failed');
         } catch {
             setError('Connection error');
         }

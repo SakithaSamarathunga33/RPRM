@@ -1,32 +1,55 @@
 /**
  * Central API client for the poker room manager.
- * All frontend API calls go through this file (credentials: include for session cookies).
+ * Uses session cookie when same-origin; uses Bearer token for cross-origin (Chrome).
  */
+
+const SESSION_TOKEN_KEY = 'rprm_session_token';
+
+export function getSessionToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return sessionStorage.getItem(SESSION_TOKEN_KEY);
+}
+
+export function setSessionToken(token: string): void {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+}
+
+export function clearSessionToken(): void {
+    if (typeof window === 'undefined') return;
+    sessionStorage.removeItem(SESSION_TOKEN_KEY);
+}
 
 export type ApiOptions = RequestInit & {
     onUnauthorized?: () => void;
 };
+
+function getDefaultHeaders(): HeadersInit {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const token = getSessionToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
 
 const defaultOpts: RequestInit = {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
 };
 
-// Fallback to localhost:5000 in development if variable is not set
+// Fallback to localhost:5001 in development if variable is not set
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : '');
 
 async function request<T = unknown>(url: string, opts?: ApiOptions): Promise<T> {
     const { onUnauthorized, ...init } = opts ?? {};
     const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
-
-    // If using absolute URL different from origin, credentials might fail without proper CORS setup on backend
-    // backend already has CORS: origin: 'http://localhost:3000', credentials: true.
+    const headers = { ...getDefaultHeaders(), ...(init?.headers as Record<string, string>) };
 
     try {
-        const res = await fetch(fullUrl, { ...defaultOpts, ...init, headers: { ...defaultOpts.headers, ...init?.headers } as HeadersInit });
+        const res = await fetch(fullUrl, { ...defaultOpts, ...init, headers });
         const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-        if (data && (data as { error?: string }).error === 'Not authenticated' && onUnauthorized) {
-            onUnauthorized();
+        if (data && (data as { error?: string }).error === 'Not authenticated') {
+            clearSessionToken();
+            if (onUnauthorized) onUnauthorized();
         }
         return data;
     } catch (err) {
@@ -46,13 +69,14 @@ export function getSession(opts?: ApiOptions) {
 }
 
 export function login(username: string, password: string) {
-    return request<{ success: boolean; error?: string; user?: { id: number; username: string; full_name: string; role: string } }>('/api/login', {
+    return request<{ success: boolean; error?: string; user?: { id: number; username: string; full_name: string; role: string }; sessionToken?: string }>('/api/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
     });
 }
 
 export function logout(reason?: 'manual' | 'idle_timeout') {
+    clearSessionToken();
     return request<{ success: boolean }>('/api/logout', {
         method: 'POST',
         body: JSON.stringify({ reason: reason || 'manual' }),
