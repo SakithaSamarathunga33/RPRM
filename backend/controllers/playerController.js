@@ -40,7 +40,28 @@ exports.createPlayer = async (req, res) => {
 exports.updatePlayer = async (req, res) => {
     try {
         const pid = req.params.pid;
+        const oldPlayer = await Player.findById(pid);
+
         await Player.update(pid, req.body);
+
+        if (req.session.user_id && oldPlayer) {
+            const changes = [];
+            const fields = ['name', 'nickname', 'phone', 'email', 'notes', 'nationality', 'id_type', 'id_number', 'status', 'membership_id'];
+
+            for (const field of fields) {
+                if (req.body[field] !== undefined && req.body[field] !== oldPlayer[field]) {
+                    // Soft comparison for ID equality? Assuming strings for simplification
+                    const oldVal = oldPlayer[field] || '(empty)';
+                    const newVal = req.body[field] || '(empty)';
+                    changes.push(`${field}: "${oldVal}" -> "${newVal}"`);
+                }
+            }
+
+            if (changes.length > 0) {
+                await logAudit(req.session.user_id, req.session.username, 'UPDATE_PLAYER', `Updated player ${oldPlayer.name} (${oldPlayer.membership_id}): ${changes.join(', ')}`);
+            }
+        }
+
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 };
