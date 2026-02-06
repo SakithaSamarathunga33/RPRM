@@ -18,12 +18,20 @@ exports.login = async (req, res) => {
             req.session.full_name = user.full_name;
             req.session.role = user.role;
 
-            await User.updateLastLogin(user.id);
-            await logAudit(user.id, user.username, 'LOGIN');
+            // Explicitly save session before responding to ensure cookie is set
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Session save error:', err);
+                    return res.status(500).json({ success: false, error: 'Session error' });
+                }
 
-            res.json({
-                success: true,
-                user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role }
+                User.updateLastLogin(user.id);
+                logAudit(user.id, user.username, 'LOGIN');
+
+                res.json({
+                    success: true,
+                    user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role }
+                });
             });
         } else {
             res.json({ success: false, error: 'Invalid credentials' });
@@ -52,6 +60,11 @@ exports.logout = (req, res) => {
 };
 
 exports.getSession = (req, res) => {
+    // Prevent caching of session checks
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     if (req.session.user_id) {
         res.json({
             success: true, authenticated: true,
