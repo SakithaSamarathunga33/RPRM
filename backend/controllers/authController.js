@@ -13,24 +13,32 @@ exports.login = async (req, res) => {
         const user = await User.findByUsername(username);
 
         if (user && await bcrypt.compare(password, user.password_hash)) {
-            req.session.user_id = user.id;
-            req.session.username = user.username;
-            req.session.full_name = user.full_name;
-            req.session.role = user.role;
-
-            // Explicitly save session before responding to ensure cookie is set
-            req.session.save((err) => {
+            // Regenerate session ID for security and Chrome compatibility
+            req.session.regenerate((err) => {
                 if (err) {
-                    console.error('Session save error:', err);
+                    console.error('Session regenerate error:', err);
                     return res.status(500).json({ success: false, error: 'Session error' });
                 }
 
-                User.updateLastLogin(user.id);
-                logAudit(user.id, user.username, 'LOGIN');
+                req.session.user_id = user.id;
+                req.session.username = user.username;
+                req.session.full_name = user.full_name;
+                req.session.role = user.role;
 
-                res.json({
-                    success: true,
-                    user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role }
+                // Explicitly save session before responding to ensure cookie is set
+                req.session.save((err) => {
+                    if (err) {
+                        console.error('Session save error:', err);
+                        return res.status(500).json({ success: false, error: 'Session error' });
+                    }
+
+                    User.updateLastLogin(user.id);
+                    logAudit(user.id, user.username, 'LOGIN');
+
+                    res.json({
+                        success: true,
+                        user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role }
+                    });
                 });
             });
         } else {

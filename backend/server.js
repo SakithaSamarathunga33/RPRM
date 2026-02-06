@@ -29,18 +29,21 @@ app.use((req, res, next) => {
 app.set('trust proxy', 1);
 
 const sessionStore = createSessionStore();
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT === 'production';
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'dev_secret',
+    name: 'rprm.sid', // Explicit session cookie name
     resave: false,
     saveUninitialized: false,
     store: sessionStore || undefined,
     cookie: {
-        secure: isProduction, // HTTPS only in production
+        secure: isProduction, // HTTPS only in production (required for SameSite=None in Chrome)
         httpOnly: true,
         sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin cookies
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        path: '/', // Explicit path
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        // Don't set domain - let browser handle it for cross-origin cookies
     }
 }));
 
