@@ -92,14 +92,18 @@ export default function DashboardClient() {
         setTimeout(() => setToast(null), 3000);
     };
 
+    const latestSectionRef = useRef(section);
+
     const loadSection = async (sec: string, forceReload = false) => {
+        // Update ref to ensure we only process the latest request
+        latestSectionRef.current = sec;
+
         // Cache key logic
         const getCacheKey = (s: string) => {
             if (s === 'dashboard') return `dashboard_${dates.dashboard}`;
             if (s === 'tables') return `tables_${dates.tables}`;
             if (s === 'transactions') return `transactions_${dates.transactions}`;
             if (s === 'fxrates') return `fxrates_${dates.fx}`;
-            // For other sections, date might not matter or is handled differently
             return s;
         };
         const cacheKey = getCacheKey(sec);
@@ -120,6 +124,8 @@ export default function DashboardClient() {
         if (!hasCache) setLoading(true);
 
         const updateData = (newData: any) => {
+            // STRICT CHECK: Ensure we are still on the same section
+            if (latestSectionRef.current !== sec) return;
             setData(newData);
             setDataCache(prev => ({ ...prev, [cacheKey]: newData }));
         };
@@ -134,18 +140,20 @@ export default function DashboardClient() {
                 case 'fxrates': {
                     const fx = await apiCall(() => getFxRates(dates.fx, authOpts), `/api/fx-rates?date=${dates.fx}`);
                     const cur = await apiCall(() => getCurrencies(authOpts), '/api/currencies');
+
+                    if (latestSectionRef.current !== sec) return; // Check before multi-step update
+
                     if (fx.success && cur.success) {
                         updateData({ rates: (fx as any).rates, currencies: cur.currencies });
                     }
                     return setLoading(false);
                 }
                 case 'reports':
-                    // Reports handles its own active report state, just clear main data
                     setData(null);
                     return setLoading(false);
                 case 'settings':
                     res = await apiCall(() => getSettings(authOpts), '/api/settings');
-                    if (res.success) {
+                    if (res.success && latestSectionRef.current === sec) {
                         if ((res as any).settings?.session_timeout_minutes) {
                             setSessionSettings({
                                 session_timeout_minutes: (res as any).settings.session_timeout_minutes,
@@ -162,7 +170,11 @@ export default function DashboardClient() {
         } catch {
             if (isDemo()) updateData(getMockDataForSection(sec));
         }
-        setLoading(false);
+
+        // Only turn off loading if we are still on the matching section
+        if (latestSectionRef.current === sec) {
+            setLoading(false);
+        }
     };
 
     const doLogout = async (isIdleTimeout = false) => {

@@ -24,12 +24,28 @@ export default function PlayerForm({
         id_number: '',
         notes: ''
     });
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const idTypes = ['Passport', 'National ID', 'Driving License', 'Other'];
 
+    const validate = () => {
+        const newErrors: Record<string, string> = {};
+        if (!d.membership_id.trim()) newErrors.membership_id = 'Membership ID is required';
+        if (!d.name.trim()) newErrors.name = 'Full Name is required';
+
+        if (d.phone && !/^[\d\s\-\+\(\)]*$/.test(d.phone)) {
+            newErrors.phone = 'Invalid phone format (digits only)';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(d);
+        if (validate()) {
+            onSubmit(d);
+        }
     };
 
     return (
@@ -49,11 +65,14 @@ export default function PlayerForm({
                         <input
                             value={d.membership_id}
                             disabled={!!initial}
-                            onChange={(e) => setD({ ...d, membership_id: e.target.value })}
-                            className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none disabled:bg-slate-100 disabled:cursor-not-allowed bg-white text-sm"
+                            onChange={(e) => {
+                                setD({ ...d, membership_id: e.target.value });
+                                if (errors.membership_id) setErrors({ ...errors, membership_id: '' });
+                            }}
+                            className={`w-full border rounded-md px-3 py-2 outline-none text-sm transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed bg-white ${errors.membership_id ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
                             placeholder="M-00001"
-                            required
                         />
+                        {errors.membership_id && <p className="text-xs text-red-500 mt-1">{errors.membership_id}</p>}
                     </div>
                     <div className="col-span-1">
                         <label className="block text-sm font-semibold text-slate-600 mb-1">
@@ -61,11 +80,14 @@ export default function PlayerForm({
                         </label>
                         <input
                             value={d.name}
-                            onChange={(e) => setD({ ...d, name: e.target.value })}
-                            className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none bg-white text-sm"
+                            onChange={(e) => {
+                                setD({ ...d, name: e.target.value });
+                                if (errors.name) setErrors({ ...errors, name: '' });
+                            }}
+                            className={`w-full border rounded-md px-3 py-2 outline-none bg-white text-sm transition-colors ${errors.name ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
                             placeholder="Player full name"
-                            required
                         />
+                        {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
                     </div>
 
                     {/* Row 2: Nickname & Phone */}
@@ -82,10 +104,14 @@ export default function PlayerForm({
                         <label className="block text-sm font-semibold text-slate-600 mb-1">Phone</label>
                         <input
                             value={d.phone || ''}
-                            onChange={(e) => setD({ ...d, phone: e.target.value })}
-                            className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none bg-white text-sm"
+                            onChange={(e) => {
+                                setD({ ...d, phone: e.target.value });
+                                if (errors.phone) setErrors({ ...errors, phone: '' });
+                            }}
+                            className={`w-full border rounded-md px-3 py-2 outline-none bg-white text-sm transition-colors ${errors.phone ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
                             placeholder="Optional"
                         />
+                        {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
                     </div>
 
                     {/* Row 3: Nationality & ID Type */}

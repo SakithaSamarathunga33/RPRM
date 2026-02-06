@@ -17,6 +17,7 @@ export default function SeatInForm({
     const [selectedId, setSelectedId] = useState<string | number>('');
     const [sn, setSn] = useState('');
     const [seatInTime, setSeatInTime] = useState(new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }));
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const filteredPlayers = useMemo(() => {
         if (!search) return players;
@@ -28,14 +29,32 @@ export default function SeatInForm({
         );
     }, [players, search]);
 
+    const validate = () => {
+        const newErrors: Record<string, string> = {};
+        if (!selectedId) newErrors.player_id = 'Please select a player';
+
+        // Seat Number: 1-10
+        if (!sn.trim()) {
+            newErrors.seat_number = 'Seat number is required';
+        } else if (!/^\d+$/.test(sn) || parseInt(sn) < 1 || parseInt(sn) > 10) {
+            newErrors.seat_number = 'Seat must be a number between 1-10';
+        }
+
+        if (!seatInTime) newErrors.seat_in_time = 'Seat-in time is required';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedId) return;
-        onSubmit({
-            player_id: selectedId,
-            seat_number: sn,
-            seat_in_time: seatInTime
-        });
+        if (validate()) {
+            onSubmit({
+                player_id: selectedId,
+                seat_number: sn,
+                seat_in_time: seatInTime
+            });
+        }
     };
 
     return (
@@ -55,14 +74,17 @@ export default function SeatInForm({
                         placeholder="Type to search..."
                         className="w-full border border-slate-300 rounded-md px-3 py-2 mb-2 focus:ring-2 focus:ring-primary/50 outline-none text-sm"
                     />
-                    <div className="h-40 overflow-y-auto border border-slate-200 rounded-md bg-white">
+                    <div className={`h-40 overflow-y-auto border rounded-md bg-white ${errors.player_id ? 'border-red-500' : 'border-slate-200'}`}>
                         {filteredPlayers.length === 0 ? (
                             <p className="p-3 text-sm text-muted text-center">No players found.</p>
                         ) : (
                             filteredPlayers.map(p => (
                                 <div
                                     key={p.id}
-                                    onClick={() => setSelectedId(p.id)}
+                                    onClick={() => {
+                                        setSelectedId(p.id);
+                                        if (errors.player_id) setErrors({ ...errors, player_id: '' });
+                                    }}
                                     className={`px-3 py-2 text-sm cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0 ${selectedId === p.id ? 'bg-indigo-50 text-primary font-medium' : 'text-slate-700'}`}
                                 >
                                     {p.membership_id} — {p.name} {p.nickname ? `(${p.nickname})` : ''}
@@ -70,6 +92,7 @@ export default function SeatInForm({
                             ))
                         )}
                     </div>
+                    {errors.player_id && <p className="text-xs text-red-500 mt-1">{errors.player_id}</p>}
                 </div>
 
                 {/* Seat Number & Time */}
@@ -79,19 +102,27 @@ export default function SeatInForm({
                         <input
                             type="text"
                             value={sn}
-                            onChange={(e) => setSn(e.target.value)}
+                            onChange={(e) => {
+                                setSn(e.target.value);
+                                if (errors.seat_number) setErrors({ ...errors, seat_number: '' });
+                            }}
                             placeholder="1-10"
-                            className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none text-sm"
+                            className={`w-full border rounded-md px-3 py-2 outline-none text-sm transition-colors ${errors.seat_number ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
                         />
+                        {errors.seat_number && <p className="text-xs text-red-500 mt-1">{errors.seat_number}</p>}
                     </div>
                     <div>
                         <label className="block text-sm font-semibold text-slate-600 mb-1">Seat-in Time</label>
                         <input
                             type="time"
                             value={seatInTime}
-                            onChange={(e) => setSeatInTime(e.target.value)}
-                            className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none text-sm"
+                            onChange={(e) => {
+                                setSeatInTime(e.target.value);
+                                if (errors.seat_in_time) setErrors({ ...errors, seat_in_time: '' });
+                            }}
+                            className={`w-full border rounded-md px-3 py-2 outline-none text-sm transition-colors ${errors.seat_in_time ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
                         />
+                        {errors.seat_in_time && <p className="text-xs text-red-500 mt-1">{errors.seat_in_time}</p>}
                     </div>
                 </div>
 
@@ -104,7 +135,7 @@ export default function SeatInForm({
                 {/* Buttons */}
                 <div className="flex gap-3 justify-end border-t border-slate-100 pt-5">
                     <button type="button" className="px-5 py-2.5 rounded-md font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200" onClick={onClose}>Cancel</button>
-                    <button type="submit" disabled={!selectedId} className="px-5 py-2.5 rounded-md font-semibold bg-[#2563EB] text-white hover:bg-blue-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">Seat In</button>
+                    <button type="submit" className="px-5 py-2.5 rounded-md font-semibold bg-[#2563EB] text-white hover:bg-blue-700 shadow-sm">Seat In</button>
                 </div>
             </form>
         </div>

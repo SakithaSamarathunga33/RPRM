@@ -5,6 +5,11 @@ const { logAudit } = require('../models/Audit');
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
+
+        if (!username || typeof username !== 'string' || !password || typeof password !== 'string') {
+            return res.status(400).json({ success: false, error: 'Invalid input' });
+        }
+
         const user = await User.findByUsername(username);
 
         if (user && await bcrypt.compare(password, user.password_hash)) {

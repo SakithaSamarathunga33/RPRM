@@ -36,6 +36,7 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
     const [formData, setFormData] = useState({ username: '', full_name: '', password: '', role: '' });
     const [editingId, setEditingId] = useState<number | string | null>(null);
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [saving, setSaving] = useState(false);
 
     // Delete confirmation state
@@ -48,6 +49,7 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
         setFormData({ username: '', full_name: '', password: '', role: '' });
         setEditingId(null);
         setError('');
+        setFieldErrors({});
     };
 
     const handleOpenChange = (val: boolean) => {
@@ -91,15 +93,22 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
         setUserToDelete(null);
     };
 
-    const handleSubmit = async () => {
-        if (!formData.username || !formData.full_name || !formData.role) {
-            setError('Username, Name, and Role are required');
-            return;
-        }
+    const validate = () => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.username.trim()) newErrors.username = 'Username is required';
+        if (!formData.full_name.trim()) newErrors.full_name = 'Full Name is required';
+        if (!formData.role) newErrors.role = 'Role is required';
+
         if (!editingId && !formData.password) {
-            setError('Password is required for new users');
-            return;
+            newErrors.password = 'Password is required for new users';
         }
+
+        setFieldErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async () => {
+        if (!validate()) return;
 
         setSaving(true);
         setError('');
@@ -140,31 +149,61 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                     <DialogTitle>{editingId ? 'Edit User' : 'Add User'}</DialogTitle>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
-                                    {error && <div className="text-red-500 text-sm">{error}</div>}
+                                    {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="username">Username *</Label>
                                             <Input
                                                 id="username"
                                                 value={formData.username}
-                                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, username: e.target.value });
+                                                    if (fieldErrors.username) setFieldErrors({ ...fieldErrors, username: '' });
+                                                }}
                                                 disabled={!!editingId} // Usually username is immutable or hard to change
+                                                className={fieldErrors.username ? 'border-red-500' : ''}
                                             />
+                                            {fieldErrors.username && <p className="text-xs text-red-500">{fieldErrors.username}</p>}
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="fullname">Full Name *</Label>
-                                            <Input id="fullname" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} />
+                                            <Input
+                                                id="fullname"
+                                                value={formData.full_name}
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, full_name: e.target.value });
+                                                    if (fieldErrors.full_name) setFieldErrors({ ...fieldErrors, full_name: '' });
+                                                }}
+                                                className={fieldErrors.full_name ? 'border-red-500' : ''}
+                                            />
+                                            {fieldErrors.full_name && <p className="text-xs text-red-500">{fieldErrors.full_name}</p>}
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="password">Password {editingId && '(leave blank to keep)'}</Label>
-                                            <Input id="password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                                            <Input
+                                                id="password"
+                                                type="password"
+                                                value={formData.password}
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, password: e.target.value });
+                                                    if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                                                }}
+                                                className={fieldErrors.password ? 'border-red-500' : ''}
+                                            />
+                                            {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="role">Role *</Label>
-                                            <Select value={formData.role} onValueChange={(val) => setFormData({ ...formData, role: val })}>
-                                                <SelectTrigger>
+                                            <Select
+                                                value={formData.role}
+                                                onValueChange={(val) => {
+                                                    setFormData({ ...formData, role: val });
+                                                    if (fieldErrors.role) setFieldErrors({ ...fieldErrors, role: '' });
+                                                }}
+                                            >
+                                                <SelectTrigger className={fieldErrors.role ? 'border-red-500' : ''}>
                                                     <SelectValue placeholder="Select role" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -175,6 +214,7 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                                     <SelectItem value="account">Account</SelectItem>
                                                 </SelectContent>
                                             </Select>
+                                            {fieldErrors.role && <p className="text-xs text-red-500">{fieldErrors.role}</p>}
                                         </div>
                                     </div>
                                 </div>
