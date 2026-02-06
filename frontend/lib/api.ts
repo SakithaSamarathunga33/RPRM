@@ -12,14 +12,27 @@ const defaultOpts: RequestInit = {
     headers: { 'Content-Type': 'application/json' },
 };
 
+// Fallback to localhost:5000 in development if variable is not set
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5001' : '');
+
 async function request<T = unknown>(url: string, opts?: ApiOptions): Promise<T> {
     const { onUnauthorized, ...init } = opts ?? {};
-    const res = await fetch(url, { ...defaultOpts, ...init, headers: { ...defaultOpts.headers, ...init?.headers } as HeadersInit });
-    const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-    if (data && (data as { error?: string }).error === 'Not authenticated' && onUnauthorized) {
-        onUnauthorized();
+    const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
+
+    // If using absolute URL different from origin, credentials might fail without proper CORS setup on backend
+    // backend already has CORS: origin: 'http://localhost:3000', credentials: true.
+
+    try {
+        const res = await fetch(fullUrl, { ...defaultOpts, ...init, headers: { ...defaultOpts.headers, ...init?.headers } as HeadersInit });
+        const data = (await res.json().catch(() => ({}))) as T & { error?: string };
+        if (data && (data as { error?: string }).error === 'Not authenticated' && onUnauthorized) {
+            onUnauthorized();
+        }
+        return data;
+    } catch (err) {
+        console.error("API Request Failed:", err);
+        throw err;
     }
-    return data;
 }
 
 /** Base API call; use when you need custom options or the response as-is. */
