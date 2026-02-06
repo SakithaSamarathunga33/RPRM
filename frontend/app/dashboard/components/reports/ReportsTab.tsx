@@ -1,5 +1,14 @@
 'use client';
 
+import { useState } from 'react';
+import { BarChart3, LayoutGrid, Users, Trophy, Coins } from 'lucide-react';
+import FinancialSummaryReport from './financial-summary/FinancialSummaryReport';
+import LoyaltyRankingsReport from './loyalty-rankings/LoyaltyRankingsReport';
+import PlayerActivityReport from './player-activity/PlayerActivityReport';
+import TableSummaryReport from './table-summary/TableSummaryReport';
+import DailySummaryReport from './daily-summary/DailySummaryReport';
+
+
 interface ReportsTabProps {
     data: any;
     loading: boolean;
@@ -8,20 +17,185 @@ interface ReportsTabProps {
 }
 
 export default function ReportsTab({ data, loading, date, onDateChange }: ReportsTabProps) {
-    return (
-        <section className="bg-white rounded-xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-5 flex-wrap gap-2">
-                <h2 className="text-xl text-primary">Reports</h2>
-                <input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="px-3 py-2 border-2 border-slate-200 rounded-md text-sm" />
-            </div>
-            {loading ? (
-                <div className="text-muted">Loading...</div>
-            ) : (
-                <div className="bg-slate-50 p-6 rounded-lg">
-                    <h3 className="text-primary mb-3">📋 Report Options</h3>
-                    <p className="text-muted">Daily summary, player activity, and loyalty rankings are available from the Dashboard and Players sections. Additional report types can be added here.</p>
+    const [activeReport, setActiveReport] = useState<string | null>(null);
+
+    const reports = [
+        {
+            title: 'Daily Summary (EOD)',
+            description: 'Complete EOD report',
+            icon: <BarChart3 className="w-10 h-10 text-blue-500 mb-2" />,
+            id: 'daily-summary'
+        },
+        {
+            title: 'Table Summary',
+            description: 'All tables with rake',
+            icon: <LayoutGrid className="w-10 h-10 text-red-500 mb-2" />,
+            id: 'table-summary'
+        },
+        {
+            title: 'Player Activity',
+            description: 'Sessions, buy-ins, results',
+            icon: <Users className="w-10 h-10 text-purple-600 mb-2" />,
+            id: 'player-activity'
+        },
+        {
+            title: 'Loyalty Rankings',
+            description: 'Player rankings YTD',
+            icon: <Trophy className="w-10 h-10 text-yellow-500 mb-2" />,
+            id: 'loyalty-rankings'
+        },
+        {
+            title: 'Financial Summary',
+            description: 'Rake, share, P&L',
+            icon: <Coins className="w-10 h-10 text-green-600 mb-2" />,
+            id: 'financial-summary'
+        }
+    ];
+
+    if (activeReport === 'financial-summary') {
+        return (
+            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => onDateChange(e.target.value)}
+                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                    </div>
                 </div>
-            )}
+                <FinancialSummaryReport
+                    date={date}
+                    onClose={() => setActiveReport(null)}
+                    data={data}
+                />
+            </section>
+        );
+    }
+
+    if (activeReport === 'loyalty-rankings') {
+        return (
+            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => onDateChange(e.target.value)}
+                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                    </div>
+                </div>
+                <LoyaltyRankingsReport
+                    date={date}
+                    onClose={() => setActiveReport(null)}
+                    data={data}
+                />
+            </section>
+        );
+    }
+
+    if (activeReport === 'player-activity') {
+        return (
+            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => onDateChange(e.target.value)}
+                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                    </div>
+                </div>
+                <PlayerActivityReport
+                    date={date}
+                    onClose={() => setActiveReport(null)}
+                    data={data}
+                />
+            </section>
+        );
+    }
+
+    if (activeReport === 'table-summary') {
+        return (
+            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => onDateChange(e.target.value)}
+                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                    </div>
+                </div>
+                <TableSummaryReport
+                    date={date}
+                    onClose={() => setActiveReport(null)}
+                    data={data}
+                />
+            </section>
+        );
+    }
+
+    if (activeReport === 'daily-summary') {
+        return (
+            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => onDateChange(e.target.value)}
+                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                    </div>
+                </div>
+                <DailySummaryReport
+                    date={date}
+                    onClose={() => setActiveReport(null)}
+                    data={data}
+                />
+            </section>
+        );
+    }
+
+    return (
+        <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+            <div className="flex justify-between items-center mb-8">
+                <h2 className="text-xl font-bold text-slate-800">Reports</h2>
+                <div className="relative">
+                    <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => onDateChange(e.target.value)}
+                        className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                {reports.map((report) => (
+                    <div
+                        key={report.id}
+                        onClick={() => setActiveReport(report.id)}
+                        className="border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-200 cursor-pointer group bg-white hover:border-primary/30"
+                    >
+                        <div className="bg-slate-50 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200">
+                            {report.icon}
+                        </div>
+                        <h3 className="font-bold text-slate-800 mb-1">{report.title}</h3>
+                        <p className="text-xs text-slate-500 font-medium">{report.description}</p>
+                    </div>
+                ))}
+            </div>
         </section>
     );
 }

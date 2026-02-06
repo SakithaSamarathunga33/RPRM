@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast as sonnerToast } from 'sonner';
 import {
     getSession,
     getCurrencies,
@@ -30,8 +31,10 @@ import {
     AuditTab,
 } from './components';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 
 type User = { id: number; username: string; full_name: string; role: string };
+type SessionSettings = { session_timeout_minutes: number };
 
 export default function DashboardClient() {
     const router = useRouter();
@@ -42,9 +45,12 @@ export default function DashboardClient() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [allCurrencies, setAllCurrencies] = useState<any[]>([]);
+    const [sessionSettings, setSessionSettings] = useState<SessionSettings>({ session_timeout_minutes: 30 });
+    const [dataCache, setDataCache] = useState<Record<string, any>>({});
 
     const today = new Date().toISOString().split('T')[0];
     const [dates, setDates] = useState({ dashboard: today, tables: today, transactions: today, fx: today, report: today });
+    const previousSectionRef = useRef<string | null>(null);
 
     const authOpts = { onUnauthorized: () => router.push('/login') };
     const isDemo = () => typeof window !== 'undefined' && localStorage.getItem('demo_mode') === 'true';
@@ -86,9 +92,38 @@ export default function DashboardClient() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const loadSection = async (sec: string) => {
-        if (!user) return;
-        setLoading(true);
+    const loadSection = async (sec: string, forceReload = false) => {
+        // Cache key logic
+        const getCacheKey = (s: string) => {
+            if (s === 'dashboard') return `dashboard_${dates.dashboard}`;
+            if (s === 'tables') return `tables_${dates.tables}`;
+            if (s === 'transactions') return `transactions_${dates.transactions}`;
+            if (s === 'fxrates') return `fxrates_${dates.fx}`;
+            // For other sections, date might not matter or is handled differently
+            return s;
+        };
+        const cacheKey = getCacheKey(sec);
+
+        // Optimistic load from cache
+        let hasCache = false;
+        if (!forceReload && dataCache[cacheKey]) {
+            setData(dataCache[cacheKey]);
+            hasCache = true;
+        } else {
+            // Only clear if we don't have cache (or forced)
+            setData(null);
+        }
+
+        previousSectionRef.current = sec;
+
+        // Show loading only if we don't have data to show
+        if (!hasCache) setLoading(true);
+
+        const updateData = (newData: any) => {
+            setData(newData);
+            setDataCache(prev => ({ ...prev, [cacheKey]: newData }));
+        };
+
         let res: any;
         try {
             switch (sec) {
@@ -99,26 +134,58 @@ export default function DashboardClient() {
                 case 'fxrates': {
                     const fx = await apiCall(() => getFxRates(dates.fx, authOpts), `/api/fx-rates?date=${dates.fx}`);
                     const cur = await apiCall(() => getCurrencies(authOpts), '/api/currencies');
-                    if (fx.success && cur.success) setData({ rates: (fx as any).rates, currencies: cur.currencies });
+                    if (fx.success && cur.success) {
+                        updateData({ rates: (fx as any).rates, currencies: cur.currencies });
+                    }
                     return setLoading(false);
                 }
-                case 'reports': setData(null); return setLoading(false);
-                case 'settings': res = await apiCall(() => getSettings(authOpts), '/api/settings'); if (res.success) setData((res as any).settings); return setLoading(false);
-                case 'users': res = await apiCall(() => getUsers(authOpts), '/api/users'); if (res.success) setData((res as any).users); return setLoading(false);
-                case 'audit': res = await apiCall(() => getAuditLog(authOpts), '/api/audit'); if (res.success) setData((res as any).entries); return setLoading(false);
+                case 'reports':
+                    // Reports handles its own active report state, just clear main data
+                    setData(null);
+                    return setLoading(false);
+                case 'settings':
+                    res = await apiCall(() => getSettings(authOpts), '/api/settings');
+                    if (res.success) {
+                        if ((res as any).settings?.session_timeout_minutes) {
+                            setSessionSettings({
+                                session_timeout_minutes: (res as any).settings.session_timeout_minutes,
+                            });
+                        }
+                        updateData((res as any).settings);
+                    }
+                    return setLoading(false);
+                case 'users': res = await apiCall(() => getUsers(authOpts), '/api/users'); if (res.success) updateData((res as any).users); return setLoading(false);
+                case 'audit': res = await apiCall(() => getAuditLog(authOpts), '/api/audit'); if (res.success) updateData((res as any).entries); return setLoading(false);
                 default: res = null;
             }
-            if (res && res.success) setData(res);
+            if (res && res.success) updateData(res);
         } catch {
-            if (isDemo()) setData(getMockDataForSection(sec));
+            if (isDemo()) updateData(getMockDataForSection(sec));
         }
         setLoading(false);
     };
 
-    const doLogout = async () => {
-        await logout();
+    const doLogout = async (isIdleTimeout = false) => {
+        await logout(isIdleTimeout ? 'idle_timeout' : 'manual');
+        if (isIdleTimeout) {
+            // Store a flag to show message on login page
+            sessionStorage.setItem('idle_logout', 'true');
+        }
         router.push('/login');
     };
+
+    // Handle idle timeout - auto-logout user
+    const handleIdleTimeout = useCallback(() => {
+        sonnerToast.warning('Session expired due to inactivity. Please log in again.');
+        doLogout(true);
+    }, []);
+
+    // Idle timeout hook
+    useIdleTimeout({
+        timeoutMinutes: sessionSettings.session_timeout_minutes,
+        onIdle: handleIdleTimeout,
+        enabled: !!user && sessionSettings.session_timeout_minutes > 0,
+    });
 
     const sectionApi = {
         showToast,
@@ -128,7 +195,7 @@ export default function DashboardClient() {
         apiCall,
     };
 
-    // Replacing the original useEffects:
+    // Initial session check and settings load
     useEffect(() => {
         apiCall(() => getSession(authOpts), '/api/session').then((d: any) => {
             if (!d.authenticated) router.push('/login');
@@ -142,6 +209,15 @@ export default function DashboardClient() {
 
                 apiCall(() => getCurrencies(authOpts), '/api/currencies').then((c: any) => {
                     if (c.success) setAllCurrencies(c.currencies ?? []);
+                });
+
+                // Load settings for session timeout
+                apiCall(() => getSettings(authOpts), '/api/settings').then((s: any) => {
+                    if (s.success && s.settings) {
+                        setSessionSettings({
+                            session_timeout_minutes: s.settings.session_timeout_minutes ?? 30,
+                        });
+                    }
                 });
             }
         });
@@ -170,7 +246,7 @@ export default function DashboardClient() {
                 <div className="flex items-center gap-3 text-sm">
                     <span>{user.full_name}</span>
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/20">{user.role.toUpperCase()}</span>
-                    <button type="button" className="px-4 py-2 rounded-md text-sm font-semibold bg-white/20 hover:bg-white/30 transition" onClick={doLogout}>Logout</button>
+                    <button type="button" className="px-4 py-2 rounded-md text-sm font-semibold bg-white/20 hover:bg-white/30 transition" onClick={() => doLogout()}>Logout</button>
                 </div>
             </header>
             <Tabs value={section} onValueChange={setSection} className="flex flex-col flex-1">
@@ -226,12 +302,12 @@ export default function DashboardClient() {
                     )}
                     {allowedTabs.includes('transactions') && (
                         <TabsContent value="transactions" className="m-0 space-y-4 outline-none">
-                            <TransactionsTab data={data} loading={loading} date={dates.transactions} onDateChange={(date) => setDates((d) => ({ ...d, transactions: date }))} showToast={showToast} />
+                            <TransactionsTab data={data} loading={loading} date={dates.transactions} onDateChange={(date) => setDates((d) => ({ ...d, transactions: date }))} api={sectionApi} />
                         </TabsContent>
                     )}
                     {allowedTabs.includes('fxrates') && (
                         <TabsContent value="fxrates" className="m-0 space-y-4 outline-none">
-                            <FxRatesTab data={data} loading={loading} date={dates.fx} onDateChange={(date) => setDates((d) => ({ ...d, fx: date }))} />
+                            <FxRatesTab data={data} loading={loading} date={dates.fx} onDateChange={(date) => setDates((d) => ({ ...d, fx: date }))} api={sectionApi} />
                         </TabsContent>
                     )}
                     {allowedTabs.includes('reports') && (
@@ -241,12 +317,12 @@ export default function DashboardClient() {
                     )}
                     {allowedTabs.includes('settings') && (
                         <TabsContent value="settings" className="m-0 space-y-4 outline-none">
-                            <SettingsTab data={data} loading={loading} />
+                            <SettingsTab data={data} loading={loading} loadSection={loadSection} />
                         </TabsContent>
                     )}
                     {allowedTabs.includes('users') && (
                         <TabsContent value="users" className="m-0 space-y-4 outline-none">
-                            <UsersTab data={data} loading={loading} loadSection={loadSection} />
+                            <UsersTab data={data} loading={loading} loadSection={loadSection} currentUser={user} />
                         </TabsContent>
                     )}
                     {allowedTabs.includes('audit') && (

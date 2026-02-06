@@ -39,8 +39,11 @@ export function login(username: string, password: string) {
     });
 }
 
-export function logout() {
-    return request<{ success: boolean }>('/api/logout', { method: 'POST' });
+export function logout(reason?: 'manual' | 'idle_timeout') {
+    return request<{ success: boolean }>('/api/logout', {
+        method: 'POST',
+        body: JSON.stringify({ reason: reason || 'manual' }),
+    });
 }
 
 // ─── Settings & reference data ───
@@ -52,8 +55,24 @@ export function getSettings(opts?: ApiOptions) {
     return request<{ success: boolean; settings?: unknown }>('/api/settings', opts);
 }
 
+export function updateSettings(body: Record<string, unknown>, opts?: ApiOptions) {
+    return request<{ success: boolean; error?: string }>('/api/settings', {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        ...opts,
+    });
+}
+
 export function getFxRates(date: string, opts?: ApiOptions) {
     return request<{ success: boolean; rates?: unknown[] }>(`/api/fx-rates?date=${date}`, opts);
+}
+
+export function updateFxRate(body: { currency_code: string; rate_to_lkr: number | string; effective_date: string; notes?: string }, opts?: ApiOptions) {
+    return request<{ success: boolean; error?: string }>('/api/fx-rates', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...opts,
+    });
 }
 
 // ─── Reports ───
@@ -66,7 +85,7 @@ export function getPlayerReport(pid: number, opts?: ApiOptions) {
 }
 
 export function getAuditLog(opts?: ApiOptions) {
-    return request<{ success: boolean; entries?: unknown[] }>('/api/audit-log', opts);
+    return request<{ success: boolean; entries?: unknown[] }>('/api/reports/audit-log', opts);
 }
 
 // ─── Tables ───
@@ -121,6 +140,10 @@ export function getNextPlayerId(opts?: ApiOptions) {
     return request<{ success: boolean; next_id?: string }>('/api/players/next-id', opts);
 }
 
+export function getPlayer(pid: number | string, opts?: ApiOptions) {
+    return request<{ success: boolean; player?: unknown }>('/api/players/' + pid, opts);
+}
+
 export function createPlayer(body: Record<string, unknown>, opts?: ApiOptions) {
     return request<{ success: boolean; error?: string }>('/api/players', {
         method: 'POST',
@@ -158,6 +181,14 @@ export function cashout(body: { player_session_id: number; amount: string | numb
     });
 }
 
+export function createExpense(body: { amount: string | number; category: string; notes?: string; date: string }, opts?: ApiOptions) {
+    return request<{ success: boolean; error?: string }>('/api/transactions/expense', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        ...opts,
+    });
+}
+
 // ─── Users (admin) ───
 export function getUsers(opts?: ApiOptions) {
     return request<{ success: boolean; users?: unknown[] }>('/api/users', opts);
@@ -167,6 +198,21 @@ export function createUser(body: Record<string, unknown>, opts?: ApiOptions) {
     return request<{ success: boolean; error?: string }>('/api/users', {
         method: 'POST',
         body: JSON.stringify(body),
+        ...opts,
+    });
+}
+
+export function updateUser(id: number | string, body: Record<string, unknown>, opts?: ApiOptions) {
+    return request<{ success: boolean; error?: string }>(`/api/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+        ...opts,
+    });
+}
+
+export function deleteUser(id: number | string, opts?: ApiOptions) {
+    return request<{ success: boolean; error?: string }>(`/api/users/${id}`, {
+        method: 'DELETE',
         ...opts,
     });
 }

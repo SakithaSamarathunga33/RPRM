@@ -32,8 +32,16 @@ exports.login = async (req, res) => {
 exports.logout = (req, res) => {
     const uid = req.session.user_id;
     const uname = req.session.username;
+    const reason = req.body?.reason || 'manual';
+
     req.session.destroy((err) => {
-        if (uid) logAudit(uid, uname, 'LOGOUT');
+        if (uid) {
+            if (reason === 'idle_timeout') {
+                logAudit(uid, uname, 'AUTO_LOGOUT', 'Session expired due to inactivity');
+            } else {
+                logAudit(uid, uname, 'LOGOUT');
+            }
+        }
         res.json({ success: true });
     });
 };

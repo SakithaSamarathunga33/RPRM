@@ -11,7 +11,7 @@ class UserModel {
     }
 
     static async findAll() {
-        return await User.find({}, 'id username full_name role status last_login created_at');
+        return await User.find({ status: { $ne: 'deleted' } }, 'id username full_name role status last_login created_at');
     }
 
     static async create(data) {
@@ -32,6 +32,27 @@ class UserModel {
     static async updatePassword(id, newPassword) {
         const pw = await bcrypt.hash(newPassword, 10);
         return await User.findByIdAndUpdate(id, { password_hash: pw });
+    }
+
+    static async update(id, data) {
+        const updateData = {
+            full_name: data.full_name,
+            role: data.role,
+            can_export_csv: data.can_export_csv || false,
+            can_view_pnl: data.can_view_pnl || false,
+            can_close_day: data.can_close_day || false,
+            can_enter_rake: data.can_enter_rake || false
+        };
+        // Only update password if provided
+        if (data.password) {
+            updateData.password_hash = await bcrypt.hash(data.password, 10);
+        }
+        return await User.findByIdAndUpdate(id, updateData);
+    }
+
+    static async delete(id) {
+        // Soft delete
+        return await User.findByIdAndUpdate(id, { status: 'deleted' });
     }
 }
 

@@ -10,6 +10,14 @@ exports.getAllPlayers = async (req, res) => {
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 };
 
+exports.getPlayer = async (req, res) => {
+    try {
+        const player = await Player.findById(req.params.pid);
+        if (!player) return res.json({ success: false, error: 'Not found' });
+        res.json({ success: true, player });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+};
+
 exports.getNextId = async (req, res) => {
     try {
         const nextId = await Player.getNextId();

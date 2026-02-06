@@ -35,7 +35,7 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
                     <p className="text-center p-4 text-muted">No players seated.</p>
                 ) : (
                     <table className="w-full text-sm border-collapse">
-                        <thead><tr className="border-b-2 border-slate-200"><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold text-primary">Seat</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">ID</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">Player</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">In</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">Net</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">Actions</th></tr></thead>
+                        <thead><tr className="border-b-2 border-slate-200"><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold text-primary">Seat</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">ID</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">Player</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">In</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">Net</th><th className="bg-slate-50 px-3 py-2.5 text-center font-semibold">Actions</th></tr></thead>
                         <tbody>
                             {((d as any).players || []).map((p: any) => (
                                 <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
@@ -44,12 +44,12 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
                                     <td className="px-3 py-2.5">{p.name}</td>
                                     <td className="px-3 py-2.5">{p.seat_in_time}</td>
                                     <td className={`px-3 py-2.5 font-semibold ${(p.total_cashout_lkr - p.total_buyin_lkr) >= 0 ? 'text-success' : 'text-danger'}`}>{fmt(p.total_cashout_lkr - p.total_buyin_lkr)}</td>
-                                    <td className="px-3 py-2.5">
+                                    <td className="px-3 py-2.5 text-center">
                                         {p.status === 'active' && (
-                                            <div className="flex gap-1">
-                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-accent text-white hover:opacity-90" onClick={() => { setModal(null); showBuyinModal(p.id, p); }}>Buy</button>
-                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-success text-white hover:opacity-90" onClick={() => { setModal(null); showCashoutModal(p.id, p); }}>Cash</button>
-                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-danger text-white hover:opacity-90" onClick={() => { setModal(null); showSeatOutModal(p.id, p); }}>Out</button>
+                                            <div className="flex gap-1 justify-center">
+                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-accent text-white hover:opacity-90" onClick={() => { setModal(null); showBuyinModal(p.id, p); }}>Buy In</button>
+                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-success text-white hover:opacity-90" onClick={() => { setModal(null); showCashoutModal(p.id, p); }}>Cash Out</button>
+                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-danger text-white hover:opacity-90" onClick={() => { setModal(null); showSeatOutModal(p.id, p); }}>Seat Out</button>
                                             </div>
                                         )}
                                     </td>
@@ -157,7 +157,7 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
                                     <span className="text-lg font-bold text-primary">{t.table_name}</span>
                                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${t.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>{t.status.toUpperCase()}</span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-1.5 text-sm text-muted mb-3">
+                                <div className="grid grid-cols-2 gap-1.5 text-sm text-slate-900 mb-3">
                                     <span>Game: <strong className="text-slate-800">{game}</strong></span>
                                     <span>Stakes: <strong className="text-slate-800">{t.small_blind}/{t.big_blind}</strong></span>
                                     <span>Started: <strong className="text-slate-800">{t.start_time}</strong></span>

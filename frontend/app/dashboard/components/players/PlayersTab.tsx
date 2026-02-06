@@ -2,7 +2,7 @@
 
 import { fmt, fmt2, tierClass } from '../shared/utils';
 import { PlayerForm } from '../shared/forms';
-import { getPlayerReport, getNextPlayerId, createPlayer, updatePlayer } from '@/lib/api';
+import { getPlayerReport, getNextPlayerId, createPlayer, updatePlayer, getPlayer } from '@/lib/api';
 
 interface PlayersTabProps {
     data: any;
@@ -28,11 +28,21 @@ export default function PlayersTab({ data, loading, onSearchChange, api }: Playe
     };
 
     const showEditPlayerModal = async (pid: number) => {
-        const d = await getPlayerReport(pid, authOpts);
-        if ((d as any).success) setModal(<PlayerForm initial={(d as any).player} onSubmit={async (upd: any) => {
-            const res = await updatePlayer(pid, upd, authOpts);
-            if (res.success) { api.showToast?.('Player Updated', 'success'); setModal(null); loadSection('players'); } else api.showToast?.((res as any).error, 'error');
-        }} onClose={() => setModal(null)} />);
+        const d = await getPlayer(pid, authOpts);
+        if (d.success && d.player) {
+            setModal(<PlayerForm initial={d.player} onSubmit={async (upd: any) => {
+                const res = await updatePlayer(pid, upd, authOpts);
+                if (res.success) {
+                    api.showToast?.('Player Updated', 'success');
+                    setModal(null);
+                    loadSection('players');
+                } else {
+                    api.showToast?.((res as any).error || 'Update failed', 'error');
+                }
+            }} onClose={() => setModal(null)} />);
+        } else {
+            api.showToast?.('Failed to load player data', 'error');
+        }
     };
 
     const viewPlayer = async (pid: number) => {
@@ -59,8 +69,10 @@ export default function PlayersTab({ data, loading, onSearchChange, api }: Playe
                     <button type="button" className="px-4 py-2 rounded-md text-sm font-semibold bg-accent text-white hover:opacity-90" onClick={showCreatePlayerModal}>+ Register Player</button>
                 </div>
             </div>
-            {loading || !data || !data.players ? (
-                <div className="text-muted">Loading...</div>
+            {loading || !data || !data.players || !Array.isArray(data.players) ? (
+                <div className="text-muted">
+                    {loading ? 'Loading...' : 'No player data available.'}
+                </div>
             ) : data.players.length === 0 ? (
                 <p className="text-center text-muted py-10">No players found. Click "+ Register Player" to add one.</p>
             ) : (
