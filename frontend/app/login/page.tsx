@@ -1,0 +1,82 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getSession, login } from '@/lib/api';
+
+export default function LoginPage() {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const router = useRouter();
+
+    useEffect(() => {
+        getSession().then((d) => {
+            if (d.authenticated) router.push('/dashboard');
+        });
+    }, [router]);
+
+    const doLogin = async () => {
+        if (!username || !password) {
+            setError('Please enter username and password');
+            return;
+        }
+        try {
+            const d = await login(username, password);
+            if (d.success) router.push('/dashboard');
+            else setError(d.error || 'Login failed');
+        } catch {
+            setError('Connection error');
+        }
+    };
+
+    const handleKey = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') doLogin();
+    };
+
+    return (
+        <div className="min-h-screen flex flex-col justify-center items-center bg-slate-100 font-sans">
+            <div className="bg-white rounded-2xl p-12 w-[420px] max-w-[90vw] text-center shadow-lg border border-slate-200">
+                <img src="/static/images/regulus_logo.png" alt="Regulus" className="h-24 mx-auto mb-4" />
+                <h1 className="text-primary text-[22px] mb-1 tracking-wide">POKER ROOM MANAGER</h1>
+                <p className="text-slate-500 text-[13px] mb-8">Regulus Compliance Solutions Private Limited</p>
+                {error && (
+                    <div className="bg-red-100 text-red-700 px-3 py-2.5 rounded-md mb-4 text-sm">{error}</div>
+                )}
+                <div className="mb-5 text-left">
+                    <label className="block text-slate-600 text-[13px] font-semibold mb-1.5">Username</label>
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        onKeyDown={handleKey}
+                        placeholder="Enter username"
+                        autoFocus
+                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-[15px] outline-none focus:border-accent transition"
+                    />
+                </div>
+                <div className="mb-5 text-left">
+                    <label className="block text-slate-600 text-[13px] font-semibold mb-1.5">Password</label>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={handleKey}
+                        placeholder="Enter password"
+                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-[15px] outline-none focus:border-accent transition"
+                    />
+                </div>
+                <button
+                    type="button"
+                    onClick={doLogin}
+                    className="w-full py-3.5 bg-primary text-white border-0 rounded-lg text-base font-bold cursor-pointer tracking-wide hover:opacity-95"
+                >
+                    LOGIN
+                </button>
+            </div>
+            <div className="text-slate-400 text-[11px] mt-8 text-center">
+                © 2026 Regulus Compliance Solutions Private Limited. All Rights Reserved.<br />Designed by Jim Ramm
+            </div>
+        </div>
+    );
+}

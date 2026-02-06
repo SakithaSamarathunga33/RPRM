@@ -1,0 +1,261 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+    getSession,
+    getCurrencies,
+    getDailySummary,
+    getTables,
+    getTablePlayers,
+    getPlayers,
+    getTransactions,
+    getFxRates,
+    getSettings,
+    getUsers,
+    getAuditLog,
+    logout,
+    getMockData,
+    getMockDataForSection,
+} from '@/lib/api';
+import {
+    DashboardTab,
+    TablesTab,
+    PlayersTab,
+    TransactionsTab,
+    FxRatesTab,
+    ReportsTab,
+    SettingsTab,
+    UsersTab,
+    AuditTab,
+} from './components';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+type User = { id: number; username: string; full_name: string; role: string };
+
+export default function DashboardClient() {
+    const router = useRouter();
+    const [user, setUser] = useState<User | null>(null);
+    const [section, setSection] = useState('dashboard');
+    const [toast, setToast] = useState<{ msg: string; type: string } | null>(null);
+    const [modal, setModal] = useState<React.ReactNode | null>(null);
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [allCurrencies, setAllCurrencies] = useState<any[]>([]);
+
+    const today = new Date().toISOString().split('T')[0];
+    const [dates, setDates] = useState({ dashboard: today, tables: today, transactions: today, fx: today, report: today });
+
+    const authOpts = { onUnauthorized: () => router.push('/login') };
+    const isDemo = () => typeof window !== 'undefined' && localStorage.getItem('demo_mode') === 'true';
+
+    async function apiCall<T = any>(fn: () => Promise<T>, fallbackUrl?: string): Promise<T> {
+        try {
+            const d = await fn();
+            const out = d as T & { error?: string; authenticated?: boolean };
+            if (out?.error === 'Not authenticated') {
+                if (isDemo()) return getMockData('/api/session') as T;
+                router.push('/login');
+            }
+            return d;
+        } catch {
+            if (isDemo() && fallbackUrl) return getMockData(fallbackUrl) as T;
+            showToast('Connection error', 'error');
+            return { success: false } as T;
+        }
+    }
+
+    const TAB_PERMISSIONS: Record<string, string[]> = {
+        dashboard: ['admin'],
+        tables: ['admin', 'manager', 'cashier', 'floor'],
+        players: ['admin', 'manager', 'cashier', 'floor'],
+        transactions: ['admin', 'manager', 'cashier'],
+        fxrates: ['admin'],
+        reports: ['admin', 'manager', 'cashier', 'account'],
+        settings: ['admin'],
+        users: ['admin'],
+        audit: ['admin'],
+    };
+
+    const getAllowedTabs = (role: string) => {
+        return Object.keys(TAB_PERMISSIONS).filter(tab => TAB_PERMISSIONS[tab].includes(role));
+    };
+
+    const showToast = (msg: string, type = 'info') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const loadSection = async (sec: string) => {
+        if (!user) return;
+        setLoading(true);
+        let res: any;
+        try {
+            switch (sec) {
+                case 'dashboard': res = await apiCall(() => getDailySummary(dates.dashboard, authOpts), `/api/daily-summary?date=${dates.dashboard}`); break;
+                case 'tables': res = await apiCall(() => getTables(dates.tables, authOpts), `/api/tables?date=${dates.tables}`); break;
+                case 'players': res = await apiCall(() => getPlayers('active', authOpts), '/api/players?status=active'); break;
+                case 'transactions': res = await apiCall(() => getTransactions(dates.transactions, authOpts), `/api/transactions?date=${dates.transactions}`); break;
+                case 'fxrates': {
+                    const fx = await apiCall(() => getFxRates(dates.fx, authOpts), `/api/fx-rates?date=${dates.fx}`);
+                    const cur = await apiCall(() => getCurrencies(authOpts), '/api/currencies');
+                    if (fx.success && cur.success) setData({ rates: (fx as any).rates, currencies: cur.currencies });
+                    return setLoading(false);
+                }
+                case 'reports': setData(null); return setLoading(false);
+                case 'settings': res = await apiCall(() => getSettings(authOpts), '/api/settings'); if (res.success) setData((res as any).settings); return setLoading(false);
+                case 'users': res = await apiCall(() => getUsers(authOpts), '/api/users'); if (res.success) setData((res as any).users); return setLoading(false);
+                case 'audit': res = await apiCall(() => getAuditLog(authOpts), '/api/audit'); if (res.success) setData((res as any).entries); return setLoading(false);
+                default: res = null;
+            }
+            if (res && res.success) setData(res);
+        } catch {
+            if (isDemo()) setData(getMockDataForSection(sec));
+        }
+        setLoading(false);
+    };
+
+    const doLogout = async () => {
+        await logout();
+        router.push('/login');
+    };
+
+    const sectionApi = {
+        showToast,
+        setModal,
+        loadSection,
+        authOpts,
+        apiCall,
+    };
+
+    // Replacing the original useEffects:
+    useEffect(() => {
+        apiCall(() => getSession(authOpts), '/api/session').then((d: any) => {
+            if (!d.authenticated) router.push('/login');
+            else {
+                setUser(d.user);
+                // Ensure default section is valid for role
+                const allowed = getAllowedTabs(d.user.role);
+                if (!allowed.includes(section)) {
+                    setSection(allowed[0]);
+                }
+
+                apiCall(() => getCurrencies(authOpts), '/api/currencies').then((c: any) => {
+                    if (c.success) setAllCurrencies(c.currencies ?? []);
+                });
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        if (user && getAllowedTabs(user.role).includes(section)) {
+            loadSection(section);
+        }
+    }, [user, section, dates]);
+
+    if (!user) return null;
+
+    const allowedTabs = getAllowedTabs(user.role);
+
+    return (
+        <div className="min-h-screen flex flex-col">
+            <header className="bg-primary text-white px-6 py-3 flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                    <img src="/static/images/regulus_logo.png" alt="Regulus" className="h-14 rounded-md" />
+                    <div>
+                        <h1 className="text-lg font-bold tracking-wide">REGULUS POKER ROOM MANAGER <span className="text-sm font-normal opacity-80">v1.0</span></h1>
+                        <span className="text-sm opacity-80">{data?.settings?.poker_room_name ? `${data.settings.poker_room_name} — ${data.settings.casino_name}` : 'Poker Room Manager'}</span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                    <span>{user.full_name}</span>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/20">{user.role.toUpperCase()}</span>
+                    <button type="button" className="px-4 py-2 rounded-md text-sm font-semibold bg-white/20 hover:bg-white/30 transition" onClick={doLogout}>Logout</button>
+                </div>
+            </header>
+            <Tabs value={section} onValueChange={setSection} className="flex flex-col flex-1">
+                <div className="bg-white px-6 py-2 border-b-2 border-slate-200">
+                    <TabsList className="h-auto p-0 bg-transparent gap-1 flex-wrap justify-start">
+                        {allowedTabs.map((s) => (
+                            <TabsTrigger
+                                key={s}
+                                value={s}
+                                className="px-4 py-2 rounded-md text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white text-slate-600 hover:bg-slate-100 hover:text-primary transition bg-transparent shadow-none border-none"
+                            >
+                                {s === 'dashboard' && '📊 Dashboard'}
+                                {s === 'tables' && '🎰 Tables'}
+                                {s === 'players' && '👥 Players'}
+                                {s === 'transactions' && '💵 Transactions'}
+                                {s === 'fxrates' && '💱 FX Rates'}
+                                {s === 'reports' && '📋 Reports'}
+                                {s === 'settings' && '⚙️ Settings'}
+                                {s === 'users' && '👤 Users'}
+                                {s === 'audit' && '📝 Audit'}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
+                {toast && (
+                    <div
+                        className={`fixed top-5 right-5 z-[2000] px-6 py-3 rounded-lg text-white font-semibold text-sm shadow-lg ${toast.type === 'success' ? 'bg-success' : toast.type === 'error' ? 'bg-danger' : 'bg-accent'
+                            }`}
+                    >
+                        {toast.msg}
+                    </div>
+                )}
+                {modal && (
+                    <div className="fixed inset-0 bg-black/50 z-[1000] flex justify-center items-center" onClick={() => setModal(null)}>
+                        <div onClick={(e) => e.stopPropagation()}>{modal}</div>
+                    </div>
+                )}
+                <main className="flex-1 w-full p-5 box-border">
+                    {allowedTabs.includes('dashboard') && (
+                        <TabsContent value="dashboard" className="m-0 space-y-4 outline-none">
+                            <DashboardTab data={data} loading={loading} date={dates.dashboard} onDateChange={(date) => setDates((d) => ({ ...d, dashboard: date }))} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('tables') && (
+                        <TabsContent value="tables" className="m-0 space-y-4 outline-none">
+                            <TablesTab data={data} loading={loading} date={dates.tables} onDateChange={(date) => setDates((d) => ({ ...d, tables: date }))} api={sectionApi} allCurrencies={allCurrencies} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('players') && (
+                        <TabsContent value="players" className="m-0 space-y-4 outline-none">
+                            <PlayersTab data={data} loading={loading} onSearchChange={() => loadSection('players')} api={{ ...sectionApi, showToast }} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('transactions') && (
+                        <TabsContent value="transactions" className="m-0 space-y-4 outline-none">
+                            <TransactionsTab data={data} loading={loading} date={dates.transactions} onDateChange={(date) => setDates((d) => ({ ...d, transactions: date }))} showToast={showToast} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('fxrates') && (
+                        <TabsContent value="fxrates" className="m-0 space-y-4 outline-none">
+                            <FxRatesTab data={data} loading={loading} date={dates.fx} onDateChange={(date) => setDates((d) => ({ ...d, fx: date }))} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('reports') && (
+                        <TabsContent value="reports" className="m-0 space-y-4 outline-none">
+                            <ReportsTab data={data} loading={loading} date={dates.report} onDateChange={(date) => setDates((d) => ({ ...d, report: date }))} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('settings') && (
+                        <TabsContent value="settings" className="m-0 space-y-4 outline-none">
+                            <SettingsTab data={data} loading={loading} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('users') && (
+                        <TabsContent value="users" className="m-0 space-y-4 outline-none">
+                            <UsersTab data={data} loading={loading} loadSection={loadSection} />
+                        </TabsContent>
+                    )}
+                    {allowedTabs.includes('audit') && (
+                        <TabsContent value="audit" className="m-0 space-y-4 outline-none">
+                            <AuditTab data={data} loading={loading} />
+                        </TabsContent>
+                    )}
+                </main>
+            </Tabs>
+        </div>
+    );
+}

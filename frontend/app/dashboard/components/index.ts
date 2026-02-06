@@ -1,0 +1,9 @@
+export { DashboardTab } from './dashboard';
+export { TablesTab } from './tables';
+export { PlayersTab } from './players';
+export { TransactionsTab } from './transactions';
+export { FxRatesTab } from './fxrates';
+export { ReportsTab } from './reports';
+export { SettingsTab } from './settings';
+export { UsersTab } from './users';
+export { AuditTab } from './audit';
