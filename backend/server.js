@@ -25,13 +25,23 @@ app.use((req, res, next) => {
 });
 
 // Session (persistent store via session manager when DATABASE_URL is set)
+// Trust proxy for Railway/Heroku deployments (required for secure cookies behind reverse proxy)
+app.set('trust proxy', 1);
+
 const sessionStore = createSessionStore();
+const isProduction = process.env.NODE_ENV === 'production';
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'dev_secret',
     resave: false,
     saveUninitialized: false,
     store: sessionStore || undefined,
-    cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 1 day
+    cookie: {
+        secure: isProduction, // HTTPS only in production
+        httpOnly: true,
+        sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin cookies
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
 }));
 
 const routes = require('./routes/index');
