@@ -36,7 +36,14 @@ export default function TransactionsTab({ data, loading, date, onDateChange, api
                     </button>
                 </div>
             </div>
-            {loading || !data || !data.transactions ? (
+            {loading || !data ? (
+                <div className="text-muted">Loading...</div>
+            ) : data?.error || data?.success === false ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                    <p className="font-medium">Failed to load transactions</p>
+                    <p className="text-sm mt-1">{data?.error || 'Please try again.'}</p>
+                </div>
+            ) : !data?.transactions ? (
                 <div className="text-muted">Loading...</div>
             ) : data.transactions.length === 0 ? (
                 <p className="text-center text-muted py-10">No transactions for this date.</p>

@@ -34,7 +34,7 @@ export default function FxRatesTab({ data, loading, date, onDateChange, api }: F
         if (data?.rates && Array.isArray(data.rates)) {
             const newRates: Record<string, string> = {};
             data.rates.forEach((r: any) => {
-                newRates[r.currency_code] = r.rate_to_lkr;
+                newRates[r.currency_code] = String(r.rate_to_lkr ?? '');
             });
             setRates(newRates);
         } else {
@@ -65,6 +65,24 @@ export default function FxRatesTab({ data, loading, date, onDateChange, api }: F
             }
         }
     };
+
+    if (loading || !data) {
+        return (
+            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="text-muted-foreground">Loading...</div>
+            </section>
+        );
+    }
+    if (data?.error || data?.success === false) {
+        return (
+            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                    <p className="font-medium">Failed to load FX rates</p>
+                    <p className="text-sm mt-1">{data?.error || 'Please try again.'}</p>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">

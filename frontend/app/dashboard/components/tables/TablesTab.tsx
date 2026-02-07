@@ -143,7 +143,14 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
                     </button>
                 </div>
             </div>
-            {loading || !data || !data.tables || !Array.isArray(data.tables) ? (
+            {loading || !data ? (
+                <div className="text-muted">Loading...</div>
+            ) : data?.error || data?.success === false ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                    <p className="font-medium">Failed to load tables</p>
+                    <p className="text-sm mt-1">{data?.error || 'Please try again.'}</p>
+                </div>
+            ) : !data.tables || !Array.isArray(data.tables) ? (
                 <div className="text-muted">Loading...</div>
             ) : data.tables.length === 0 ? (
                 <p className="text-center text-black py-10">No tables for this date. Click "+ Open New Table" to start.</p>

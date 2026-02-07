@@ -143,8 +143,10 @@ export default function DashboardClient() {
 
                     if (latestSectionRef.current !== sec) return; // Check before multi-step update
 
-                    if (fx.success && cur.success) {
-                        updateData({ rates: (fx as any).rates, currencies: cur.currencies });
+                    if (fx?.success && cur?.success) {
+                        updateData({ success: true, rates: (fx as any).rates ?? [], currencies: cur.currencies ?? [] });
+                    } else {
+                        updateData({ success: false, error: (fx as any)?.error || (cur as any)?.error || 'Failed to load', rates: [], currencies: cur?.currencies ?? [] });
                     }
                     return setLoading(false);
                 }
@@ -162,13 +164,31 @@ export default function DashboardClient() {
                         updateData((res as any).settings);
                     }
                     return setLoading(false);
-                case 'users': res = await apiCall(() => getUsers(authOpts), '/api/users'); if (res.success) updateData((res as any).users); return setLoading(false);
-                case 'audit': res = await apiCall(() => getAuditLog(authOpts), '/api/audit'); if (res.success) updateData((res as any).entries); return setLoading(false);
+                case 'users':
+                    res = await apiCall(() => getUsers(authOpts), '/api/users');
+                    if (res?.success) updateData((res as any).users);
+                    else updateData({ success: false, error: (res as any)?.error, users: [] });
+                    return setLoading(false);
+                case 'audit':
+                    res = await apiCall(() => getAuditLog(authOpts), '/api/audit');
+                    if (res?.success) updateData((res as any).entries);
+                    else updateData({ success: false, error: (res as any)?.error, entries: [] });
+                    return setLoading(false);
                 default: res = null;
             }
-            if (res && res.success) updateData(res);
+            if (res?.success) {
+                updateData(res);
+            } else if (res && typeof res === 'object') {
+                // API returned but success: false (e.g. 500) – show error state
+                const empty = sec === 'dashboard' ? { tables: { count: 0, open: 0 }, players: { count: 0, total_hours: 0, total_points: 0, total_buyin: 0, total_cashout: 0 }, financials: { total_rake: 0, casino_share_percent: 0, casino_share: 0, house_revenue: 0, total_expenses: 0, net_result: 0 }, win_loss: { winners: 0, total_won: 0, losers: 0, total_lost: 0, breakeven: 0 }, day_status: { status: 'open' } } : sec === 'tables' ? { tables: [] } : sec === 'transactions' ? { transactions: [] } : {};
+                updateData({ success: false, error: (res as any).error || 'Failed to load', ...empty });
+            }
         } catch {
             if (isDemo()) updateData(getMockDataForSection(sec));
+            else if (latestSectionRef.current === sec) {
+                const empty = sec === 'dashboard' ? { tables: { count: 0, open: 0 }, players: { count: 0, total_hours: 0, total_points: 0, total_buyin: 0, total_cashout: 0 }, financials: { total_rake: 0, casino_share_percent: 0, casino_share: 0, house_revenue: 0, total_expenses: 0, net_result: 0 }, win_loss: { winners: 0, total_won: 0, losers: 0, total_lost: 0, breakeven: 0 }, day_status: { status: 'open' } } : sec === 'tables' ? { tables: [] } : sec === 'transactions' ? { transactions: [] } : sec === 'players' ? { players: [] } : {};
+                updateData({ success: false, error: 'Connection error', ...empty });
+            }
         }
 
         // Only turn off loading if we are still on the matching section

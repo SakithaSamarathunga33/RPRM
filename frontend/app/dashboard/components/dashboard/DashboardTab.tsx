@@ -18,7 +18,14 @@ export default function DashboardTab({ data, loading, date, onDateChange }: Dash
                     <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="w-[180px]" />
                 </div>
             </div>
-            {loading || !data || !data.financials ? (
+            {loading ? (
+                <div className="text-muted-foreground">Loading...</div>
+            ) : data?.error || data?.success === false ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                    <p className="font-medium">Failed to load dashboard</p>
+                    <p className="text-sm mt-1">{data?.error || 'Please try again.'}</p>
+                </div>
+            ) : !data || !data.financials ? (
                 <div className="text-muted-foreground">Loading...</div>
             ) : (
                 <>
