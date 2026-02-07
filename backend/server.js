@@ -2,12 +2,22 @@ const { connectDB } = require('./db');
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const { createSessionStore } = require('./sessionManager');
 const { verifyJwt } = require('./jwtAuth');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// Rate limit: per-IP cap to avoid abuse; high default so cashiers/managers aren't blocked (e.g. 1000/15min ≈ 66/min)
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: process.env.RATE_LIMIT_MAX ? parseInt(process.env.RATE_LIMIT_MAX, 10) : 1000,
+    message: { success: false, error: 'Too many requests. Try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 app.use(cors({
     origin: ['https://rprm-production.up.railway.app', 'http://localhost:3000'],
@@ -65,7 +75,7 @@ app.use((req, res, next) => {
 });
 
 const routes = require('./routes/index');
-app.use('/api', routes);
+app.use('/api', apiLimiter, routes);
 
 app.listen(PORT, async () => {
     // Explicitly load .env if process.env.DATABASE_URL is missing
