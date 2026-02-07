@@ -54,15 +54,15 @@ export default function ReportsTab({ data, loading, date, onDateChange }: Report
 
     if (activeReport === 'financial-summary') {
         return (
-            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
-                    <div className="relative">
+            <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-slate-200 overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-5">
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative w-full sm:w-auto">
                         <input
                             type="date"
                             value={date}
                             onChange={(e) => onDateChange(e.target.value)}
-                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-300 rounded-md text-base sm:text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px] sm:min-h-0 touch-manipulation"
                         />
                     </div>
                 </div>
@@ -77,15 +77,15 @@ export default function ReportsTab({ data, loading, date, onDateChange }: Report
 
     if (activeReport === 'loyalty-rankings') {
         return (
-            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
-                    <div className="relative">
+            <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-slate-200 overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-5">
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative w-full sm:w-auto">
                         <input
                             type="date"
                             value={date}
                             onChange={(e) => onDateChange(e.target.value)}
-                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-300 rounded-md text-base sm:text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px] sm:min-h-0 touch-manipulation"
                         />
                     </div>
                 </div>
@@ -100,15 +100,15 @@ export default function ReportsTab({ data, loading, date, onDateChange }: Report
 
     if (activeReport === 'player-activity') {
         return (
-            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
-                    <div className="relative">
+            <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-slate-200 overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-5">
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative w-full sm:w-auto">
                         <input
                             type="date"
                             value={date}
                             onChange={(e) => onDateChange(e.target.value)}
-                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-300 rounded-md text-base sm:text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px] sm:min-h-0 touch-manipulation"
                         />
                     </div>
                 </div>
@@ -123,15 +123,15 @@ export default function ReportsTab({ data, loading, date, onDateChange }: Report
 
     if (activeReport === 'table-summary') {
         return (
-            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
-                    <div className="relative">
+            <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-slate-200 overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-5">
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative w-full sm:w-auto">
                         <input
                             type="date"
                             value={date}
                             onChange={(e) => onDateChange(e.target.value)}
-                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-300 rounded-md text-base sm:text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px] sm:min-h-0 touch-manipulation"
                         />
                     </div>
                 </div>
@@ -146,15 +146,15 @@ export default function ReportsTab({ data, loading, date, onDateChange }: Report
 
     if (activeReport === 'daily-summary') {
         return (
-            <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-xl font-bold text-slate-800">Reports</h2>
-                    <div className="relative">
+            <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-slate-200 overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-5">
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800">Reports</h2>
+                    <div className="relative w-full sm:w-auto">
                         <input
                             type="date"
                             value={date}
                             onChange={(e) => onDateChange(e.target.value)}
-                            className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-300 rounded-md text-base sm:text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px] sm:min-h-0 touch-manipulation"
                         />
                     </div>
                 </div>
@@ -168,25 +168,25 @@ export default function ReportsTab({ data, loading, date, onDateChange }: Report
     }
 
     return (
-        <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-            <div className="flex justify-between items-center mb-8">
-                <h2 className="text-xl font-bold text-slate-800">Reports</h2>
-                <div className="relative">
+        <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-slate-200 overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-800">Reports</h2>
+                <div className="relative w-full sm:w-auto">
                     <input
                         type="date"
                         value={date}
                         onChange={(e) => onDateChange(e.target.value)}
-                        className="px-4 py-2 border border-slate-300 rounded-md text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-300 rounded-md text-base sm:text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[44px] sm:min-h-0 touch-manipulation"
                     />
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
                 {reports.map((report) => (
                     <div
                         key={report.id}
                         onClick={() => setActiveReport(report.id)}
-                        className="border border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-200 cursor-pointer group bg-white hover:border-primary/30"
+                        className="border border-slate-200 rounded-xl p-4 sm:p-6 flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-200 cursor-pointer group bg-white hover:border-primary/30 min-h-[44px] touch-manipulation"
                     >
                         <div className="bg-slate-50 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200">
                             {report.icon}

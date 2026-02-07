@@ -64,9 +64,9 @@ export default function SettingsTab({ data, loading, loadSection }: SettingsTabP
     };
 
     return (
-        <section className="bg-slate-50 rounded-xl p-6 shadow-sm">
-            <div className="mb-6">
-                <h2 className="text-xl font-semibold text-primary">Settings</h2>
+        <section className="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-sm overflow-hidden">
+            <div className="mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-primary">Settings</h2>
             </div>
 
             {loading ? (
@@ -83,7 +83,7 @@ export default function SettingsTab({ data, loading, loadSection }: SettingsTabP
                             value={formData.casino_name}
                             onChange={(e) => handleChange('casino_name', e.target.value)}
                             placeholder="Enter casino name"
-                            className="bg-white"
+                            className="bg-white min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation"
                         />
                     </div>
 
@@ -97,7 +97,7 @@ export default function SettingsTab({ data, loading, loadSection }: SettingsTabP
                             value={formData.poker_room_name}
                             onChange={(e) => handleChange('poker_room_name', e.target.value)}
                             placeholder="Enter poker room name"
-                            className="bg-white"
+                            className="bg-white min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation"
                         />
                     </div>
 
@@ -111,12 +111,12 @@ export default function SettingsTab({ data, loading, loadSection }: SettingsTabP
                             value={formData.operator_company}
                             onChange={(e) => handleChange('operator_company', e.target.value)}
                             placeholder="Enter operator company"
-                            className="bg-white"
+                            className="bg-white min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation"
                         />
                     </div>
 
                     {/* Casino Share % and Session Timeout side by side */}
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="casino_share_percent" className="text-sm font-medium text-amber-700">
                                 Casino Share %
@@ -128,7 +128,7 @@ export default function SettingsTab({ data, loading, loadSection }: SettingsTabP
                                 max="100"
                                 value={formData.casino_share_percent}
                                 onChange={(e) => handleChange('casino_share_percent', e.target.value)}
-                                className="bg-white"
+                                className="bg-white min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation"
                             />
                         </div>
                         <div className="space-y-2">
@@ -142,7 +142,7 @@ export default function SettingsTab({ data, loading, loadSection }: SettingsTabP
                                 max="1440"
                                 value={formData.session_timeout_minutes}
                                 onChange={(e) => handleChange('session_timeout_minutes', e.target.value)}
-                                className="bg-white"
+                                className="bg-white min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation"
                             />
                         </div>
                     </div>
@@ -152,7 +152,7 @@ export default function SettingsTab({ data, loading, loadSection }: SettingsTabP
                         <Button
                             onClick={handleSave}
                             disabled={saving}
-                            className="bg-primary hover:bg-primary/90"
+                            className="bg-primary hover:bg-primary/90 w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation"
                         >
                             {saving ? 'Saving...' : 'Save Settings'}
                         </Button>

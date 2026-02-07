@@ -50,23 +50,23 @@ export default function PlayersTab({ data, loading, onSearchChange, api }: Playe
         if ((d as any).success) {
             const doc = d as any;
             setModal(
-                <div className="bg-white rounded-xl p-8 min-w-[440px] shadow-xl">
-                    <h3 className="text-primary mb-5 text-lg">{doc.player.name} ({doc.player.membership_id})</h3>
-                    <p>Net Result: {doc.totals?.net != null ? fmt2(doc.totals.net) : '-'}</p>
-                    <p>Hours Played: {fmt2(doc.player?.loyalty_hours_ytd)}</p>
-                    <div className="flex justify-end mt-5"><button type="button" className="px-4 py-2 rounded-md font-semibold bg-slate-200 hover:bg-slate-300" onClick={() => setModal(null)}>Close</button></div>
+                <div className="bg-white rounded-xl p-4 sm:p-8 w-full max-w-[95vw] sm:min-w-[440px] shadow-xl max-h-[95vh] overflow-y-auto">
+                    <h3 className="text-primary mb-4 sm:mb-5 text-base sm:text-lg">{doc.player.name} ({doc.player.membership_id})</h3>
+                    <p className="text-sm sm:text-base">Net Result: {doc.totals?.net != null ? fmt2(doc.totals.net) : '-'}</p>
+                    <p className="text-sm sm:text-base">Hours Played: {fmt2(doc.player?.loyalty_hours_ytd)}</p>
+                    <div className="flex justify-end mt-5"><button type="button" className="w-full sm:w-auto px-4 py-3 sm:py-2 rounded-md font-semibold bg-slate-200 hover:bg-slate-300 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => setModal(null)}>Close</button></div>
                 </div>
             );
         }
     };
 
     return (
-        <section className="bg-white rounded-xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-5 flex-wrap gap-2">
-                <h2 className="text-xl text-primary">Player Management</h2>
-                <div className="flex gap-2 items-center">
-                    <input type="text" placeholder="Search players..." onChange={() => onSearchChange?.()} className="px-3 py-2 border-2 border-slate-200 rounded-md text-sm w-[220px]" />
-                    <button type="button" className="px-4 py-2 rounded-md text-sm font-semibold bg-accent text-white hover:opacity-90" onClick={showCreatePlayerModal}>+ Register Player</button>
+        <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-5 gap-3">
+                <h2 className="text-lg sm:text-xl text-primary">Player Management</h2>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <input type="text" placeholder="Search players..." onChange={() => onSearchChange?.()} className="w-full sm:w-[220px] px-3 py-2.5 border-2 border-slate-200 rounded-md text-base sm:text-sm min-h-[44px] sm:min-h-0 touch-manipulation" />
+                    <button type="button" className="w-full sm:w-auto px-4 py-2.5 rounded-md text-sm font-semibold bg-accent text-white hover:opacity-90 min-h-[44px] touch-manipulation" onClick={showCreatePlayerModal}>+ Register Player</button>
                 </div>
             </div>
             {loading || !data || !data.players || !Array.isArray(data.players) ? (
@@ -76,7 +76,8 @@ export default function PlayersTab({ data, loading, onSearchChange, api }: Playe
             ) : data.players.length === 0 ? (
                 <p className="text-center text-muted py-10">No players found. Click "+ Register Player" to add one.</p>
             ) : (
-                <table className="w-full text-sm border-collapse">
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <table className="w-full min-w-[640px] text-sm border-collapse">
                     <thead>
                         <tr className="border-b-2 border-slate-200">
                             <th className="bg-slate-50 px-3 py-2.5 text-left font-semibold text-primary">Membership ID</th>
@@ -100,13 +101,14 @@ export default function PlayersTab({ data, loading, onSearchChange, api }: Playe
                                 <td className="px-3 py-2.5">{fmt2(p.loyalty_hours_ytd)}</td>
                                 <td className="px-3 py-2.5">{fmt(p.loyalty_points)}</td>
                                 <td className="px-3 py-2.5">
-                                    <button type="button" className="px-3 py-1 rounded-md text-xs font-semibold bg-slate-200 hover:bg-slate-300 mr-1" onClick={() => viewPlayer(p.id)}>View</button>
-                                    <button type="button" className="px-3 py-1 rounded-md text-xs font-semibold bg-slate-200 hover:bg-slate-300" onClick={() => showEditPlayerModal(p.id)}>Edit</button>
+                                    <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-slate-200 hover:bg-slate-300 mr-1 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => viewPlayer(p.id)}>View</button>
+                                    <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-slate-200 hover:bg-slate-300 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => showEditPlayerModal(p.id)}>Edit</button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                </div>
             )}
         </section>
     );

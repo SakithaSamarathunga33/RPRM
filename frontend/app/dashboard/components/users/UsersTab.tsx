@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createUser, updateUser, deleteUser } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface UsersTabProps {
@@ -136,21 +137,21 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
 
     return (
         <>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Users</CardTitle>
+            <Card className="overflow-hidden">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:p-6">
+                    <CardTitle className="text-lg sm:text-xl">Users</CardTitle>
                     {isAdmin && (
                         <Dialog open={open} onOpenChange={handleOpenChange}>
                             <DialogTrigger asChild>
-                                <Button onClick={resetForm}>Add User</Button>
+                                <Button onClick={resetForm} className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation">Add User</Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="max-h-[95vh] overflow-y-auto w-[calc(100%-2rem)] max-w-[95vw] sm:max-w-lg">
                                 <DialogHeader>
                                     <DialogTitle>{editingId ? 'Edit User' : 'Add User'}</DialogTitle>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
                                     {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="username">Username *</Label>
                                             <Input
@@ -160,8 +161,8 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                                     setFormData({ ...formData, username: e.target.value });
                                                     if (fieldErrors.username) setFieldErrors({ ...fieldErrors, username: '' });
                                                 }}
-                                                disabled={!!editingId} // Usually username is immutable or hard to change
-                                                className={fieldErrors.username ? 'border-red-500' : ''}
+                                                disabled={!!editingId}
+                                                className={cn(fieldErrors.username ? 'border-red-500' : '', 'min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation')}
                                             />
                                             {fieldErrors.username && <p className="text-xs text-red-500">{fieldErrors.username}</p>}
                                         </div>
@@ -174,12 +175,12 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                                     setFormData({ ...formData, full_name: e.target.value });
                                                     if (fieldErrors.full_name) setFieldErrors({ ...fieldErrors, full_name: '' });
                                                 }}
-                                                className={fieldErrors.full_name ? 'border-red-500' : ''}
+                                                className={cn(fieldErrors.full_name ? 'border-red-500' : '', 'min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation')}
                                             />
                                             {fieldErrors.full_name && <p className="text-xs text-red-500">{fieldErrors.full_name}</p>}
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="password">Password {editingId && '(leave blank to keep)'}</Label>
                                             <Input
@@ -190,7 +191,7 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                                     setFormData({ ...formData, password: e.target.value });
                                                     if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
                                                 }}
-                                                className={fieldErrors.password ? 'border-red-500' : ''}
+                                                className={cn(fieldErrors.password ? 'border-red-500' : '', 'min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation')}
                                             />
                                             {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
                                         </div>
@@ -203,7 +204,7 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                                     if (fieldErrors.role) setFieldErrors({ ...fieldErrors, role: '' });
                                                 }}
                                             >
-                                                <SelectTrigger className={fieldErrors.role ? 'border-red-500' : ''}>
+                                                <SelectTrigger className={cn(fieldErrors.role ? 'border-red-500' : '', 'min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation')}>
                                                     <SelectValue placeholder="Select role" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -218,20 +219,21 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                         </div>
                                     </div>
                                 </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                                    <Button onClick={handleSubmit} disabled={saving}>{saving ? 'Saving...' : (editingId ? 'Update User' : 'Create User')}</Button>
+                                <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+                                    <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation">Cancel</Button>
+                                    <Button onClick={handleSubmit} disabled={saving} className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation">{saving ? 'Saving...' : (editingId ? 'Update User' : 'Create User')}</Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
                     )}
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                     {loading ? (
                         <div className="text-muted-foreground">Loading...</div>
                     ) : users.length === 0 ? (
                         <p className="text-center text-muted-foreground py-10">No users found.</p>
                     ) : (
+                        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -253,10 +255,10 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                         <TableCell>{u.status ?? 'active'}</TableCell>
                                         {isAdmin && (
                                             <TableCell className="text-right gap-2 flex justify-end">
-                                                <Button variant="ghost" size="icon" onClick={() => startEdit(u)}>
+                                                <Button variant="ghost" size="icon" onClick={() => startEdit(u)} className="min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 touch-manipulation">
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => openDeleteDialog(u)}>
+                                                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 touch-manipulation" onClick={() => openDeleteDialog(u)}>
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </TableCell>
@@ -265,6 +267,7 @@ export default function UsersTab({ data, loading, loadSection, currentUser }: Us
                                 ))}
                             </TableBody>
                         </Table>
+                        </div>
                     )}
                 </CardContent>
             </Card>

@@ -28,13 +28,14 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
         const tbl = (tbls as any).tables?.find((t: any) => t.id === tid);
         if (!(d as any).success || !tbl) return;
         setModal(
-            <div className="bg-white rounded-xl p-8 min-w-[440px] max-w-[600px] max-h-[90vh] overflow-y-auto shadow-xl">
-                <h3 className="text-primary mb-5 text-lg">📋 {tbl.table_name} — {tbl.game_type}</h3>
-                <p className="mb-4 text-slate-500">Status: {tbl.status} | {tbl.start_time}</p>
+            <div className="bg-white rounded-xl p-4 sm:p-8 w-full max-w-[95vw] sm:min-w-[440px] sm:max-w-[600px] max-h-[90vh] overflow-y-auto shadow-xl">
+                <h3 className="text-primary mb-4 sm:mb-5 text-base sm:text-lg">📋 {tbl.table_name} — {tbl.game_type}</h3>
+                <p className="mb-4 text-slate-500 text-sm sm:text-base">Status: {tbl.status} | {tbl.start_time}</p>
                 {(d as any).players?.length === 0 ? (
                     <p className="text-center p-4 text-muted">No players seated.</p>
                 ) : (
-                    <table className="w-full text-sm border-collapse">
+                    <div className="overflow-x-auto -mx-2 sm:mx-0">
+                    <table className="w-full min-w-[480px] text-sm border-collapse">
                         <thead><tr className="border-b-2 border-slate-200"><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold text-primary">Seat</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">ID</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">Player</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">In</th><th className="bg-slate-50 px-3 py-2.5 text-left font-semibold">Net</th><th className="bg-slate-50 px-3 py-2.5 text-center font-semibold">Actions</th></tr></thead>
                         <tbody>
                             {((d as any).players || []).map((p: any) => (
@@ -46,10 +47,10 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
                                     <td className={`px-3 py-2.5 font-semibold ${(p.total_cashout_lkr - p.total_buyin_lkr) >= 0 ? 'text-success' : 'text-danger'}`}>{fmt(p.total_cashout_lkr - p.total_buyin_lkr)}</td>
                                     <td className="px-3 py-2.5 text-center">
                                         {p.status === 'active' && (
-                                            <div className="flex gap-1 justify-center">
-                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-accent text-white hover:opacity-90" onClick={() => { setModal(null); showBuyinModal(p.id, p); }}>Buy In</button>
-                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-success text-white hover:opacity-90" onClick={() => { setModal(null); showCashoutModal(p.id, p); }}>Cash Out</button>
-                                                <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-danger text-white hover:opacity-90" onClick={() => { setModal(null); showSeatOutModal(p.id, p); }}>Seat Out</button>
+                                            <div className="flex flex-wrap gap-1 justify-center">
+                                                <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-accent text-white hover:opacity-90 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => { setModal(null); showBuyinModal(p.id, p); }}>Buy In</button>
+                                                <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-success text-white hover:opacity-90 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => { setModal(null); showCashoutModal(p.id, p); }}>Cash Out</button>
+                                                <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-danger text-white hover:opacity-90 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => { setModal(null); showSeatOutModal(p.id, p); }}>Seat Out</button>
                                             </div>
                                         )}
                                     </td>
@@ -57,8 +58,9 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
                             ))}
                         </tbody>
                     </table>
+                    </div>
                 )}
-                <div className="flex gap-2 justify-end mt-5"><button type="button" className="px-4 py-2 rounded-md text-sm font-semibold bg-slate-200 hover:bg-slate-300" onClick={() => setModal(null)}>Close</button></div>
+                <div className="flex gap-2 justify-end mt-5"><button type="button" className="w-full sm:w-auto px-4 py-3 sm:py-2 rounded-md text-sm font-semibold bg-slate-200 hover:bg-slate-300 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => setModal(null)}>Close</button></div>
             </div>
         );
     };
@@ -79,12 +81,12 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
 
     const showSeatOutModal = (psid: number, p: any) => {
         setModal(
-            <div className="bg-white rounded-xl p-8 min-w-[440px] shadow-xl">
-                <h3 className="text-primary mb-5 text-lg">Seat Out: {p.name}</h3>
-                <div className="mb-4"><label className="block text-sm font-semibold text-slate-600 mb-1">Time</label><input type="time" id="mSeatOut" defaultValue={new Date().toTimeString().slice(0, 5)} className="w-full border-2 border-slate-200 rounded-md px-3 py-2 focus:border-accent outline-none" /></div>
-                <div className="flex gap-2 justify-end">
-                    <button type="button" className="px-4 py-2 rounded-md font-semibold bg-slate-200 hover:bg-slate-300" onClick={() => setModal(null)}>Cancel</button>
-                    <button type="button" className="px-4 py-2 rounded-md font-semibold bg-danger text-white hover:opacity-90" onClick={async () => {
+            <div className="bg-white rounded-xl p-4 sm:p-8 w-full max-w-[95vw] sm:min-w-[440px] shadow-xl max-h-[95vh] overflow-y-auto">
+                <h3 className="text-primary mb-4 sm:mb-5 text-base sm:text-lg">Seat Out: {p.name}</h3>
+                <div className="mb-4"><label className="block text-sm font-semibold text-slate-600 mb-1">Time</label><input type="time" id="mSeatOut" defaultValue={new Date().toTimeString().slice(0, 5)} className="w-full border-2 border-slate-200 rounded-md px-3 py-2.5 sm:py-2 focus:border-accent outline-none min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation" /></div>
+                <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end">
+                    <button type="button" className="w-full sm:w-auto px-4 py-3 sm:py-2 rounded-md font-semibold bg-slate-200 hover:bg-slate-300 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => setModal(null)}>Cancel</button>
+                    <button type="button" className="w-full sm:w-auto px-4 py-3 sm:py-2 rounded-md font-semibold bg-danger text-white hover:opacity-90 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={async () => {
                         const t = (document.getElementById('mSeatOut') as HTMLInputElement).value;
                         const res = await seatOut(psid, { seat_out_time: t }, authOpts);
                         if (res.success) { showToast('Seated Out', 'success'); setModal(null); } else showToast((res as any).error, 'error');
@@ -105,13 +107,13 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
 
     const showCloseTableModal = (tid: number, tname: string) => {
         setModal(
-            <div className="bg-white rounded-xl p-8 min-w-[440px] shadow-xl">
-                <h3 className="text-primary mb-5 text-lg">Close Table: {tname}</h3>
-                <div className="mb-4"><label className="block text-sm font-semibold text-slate-600 mb-1">Rake Collected</label><input type="number" id="mRake" defaultValue={0} step="100" className="w-full border-2 border-slate-200 rounded-md px-3 py-2 focus:border-accent outline-none" /></div>
-                <div className="mb-4"><label className="block text-sm font-semibold text-slate-600 mb-1">End Time</label><input type="time" id="mEndTime" defaultValue={new Date().toTimeString().slice(0, 5)} className="w-full border-2 border-slate-200 rounded-md px-3 py-2 focus:border-accent outline-none" /></div>
-                <div className="flex gap-2 justify-end">
-                    <button type="button" className="px-4 py-2 rounded-md font-semibold bg-slate-200 hover:bg-slate-300" onClick={() => setModal(null)}>Cancel</button>
-                    <button type="button" className="px-4 py-2 rounded-md font-semibold bg-danger text-white hover:opacity-90" onClick={async () => {
+            <div className="bg-white rounded-xl p-4 sm:p-8 w-full max-w-[95vw] sm:min-w-[440px] shadow-xl max-h-[95vh] overflow-y-auto">
+                <h3 className="text-primary mb-4 sm:mb-5 text-base sm:text-lg">Close Table: {tname}</h3>
+                <div className="mb-4"><label className="block text-sm font-semibold text-slate-600 mb-1">Rake Collected</label><input type="number" id="mRake" defaultValue={0} step="100" className="w-full border-2 border-slate-200 rounded-md px-3 py-2.5 sm:py-2 focus:border-accent outline-none min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation" /></div>
+                <div className="mb-4"><label className="block text-sm font-semibold text-slate-600 mb-1">End Time</label><input type="time" id="mEndTime" defaultValue={new Date().toTimeString().slice(0, 5)} className="w-full border-2 border-slate-200 rounded-md px-3 py-2.5 sm:py-2 focus:border-accent outline-none min-h-[44px] sm:min-h-0 text-base sm:text-sm touch-manipulation" /></div>
+                <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end">
+                    <button type="button" className="w-full sm:w-auto px-4 py-3 sm:py-2 rounded-md font-semibold bg-slate-200 hover:bg-slate-300 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={() => setModal(null)}>Cancel</button>
+                    <button type="button" className="w-full sm:w-auto px-4 py-3 sm:py-2 rounded-md font-semibold bg-danger text-white hover:opacity-90 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={async () => {
                         const rake = parseFloat((document.getElementById('mRake') as HTMLInputElement).value);
                         const t = (document.getElementById('mEndTime') as HTMLInputElement).value;
                         const res = await closeTable(tid, { rake_collected_lkr: rake, end_time: t }, authOpts);
