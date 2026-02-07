@@ -19,8 +19,14 @@ const apiLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+// Allowed origins for CORS. Add your custom frontend domain here or via CORS_ORIGINS env.
+const corsOrigins = [
+    'https://rprm-production.up.railway.app',
+    'http://localhost:3000',
+    ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean) : [])
+];
 app.use(cors({
-    origin: ['https://rprm-production.up.railway.app', 'http://localhost:3000'],
+    origin: corsOrigins,
     credentials: true
 }));
 app.use(express.json());
