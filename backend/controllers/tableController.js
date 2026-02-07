@@ -15,7 +15,7 @@ exports.getTables = async (req, res) => {
 exports.createTable = async (req, res) => {
     try {
         const id = await Table.create(req.body, req.session.user_id);
-        logAudit(req.session.user_id, req.session.username, 'OPEN_TABLE', `${req.body.table_name}`);
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'OPEN_TABLE', `${req.body.table_name}`);
         res.json({ success: true, table_id: id });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); } // Usually returns 200 with error property in this app per server.js
 };
@@ -54,7 +54,7 @@ exports.closeTable = async (req, res) => {
             }, req.session.user_id);
         }
 
-        logAudit(req.session.user_id, req.session.username, 'CLOSE_TABLE', `Table ${tid}, Rake: ${rake}`);
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'CLOSE_TABLE', `Table ${tid}, Rake: ${rake}`);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 };
@@ -71,7 +71,7 @@ exports.seatIn = async (req, res) => {
         const id = await Table.seatPlayer(req.params.tid, req.body, req.session.user_id);
         const player = await Player.findById(req.body.player_id);
         const table = await Table.findById(req.params.tid); // To get name for audit
-        logAudit(req.session.user_id, req.session.username, 'SEAT_IN', `${player.name} at ${table.table_name}`);
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'SEAT_IN', `${player.name} at ${table.table_name}`);
         res.json({ success: true, session_id: id });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 };
@@ -89,7 +89,7 @@ exports.seatOut = async (req, res) => {
         await Table.updatePlayerSessionStats(req.params.psid, seatOut, hours, net, points);
         await Player.updateLoyalty(curPs.player_id, hours, points, tierInfo);
 
-        logAudit(req.session.user_id, req.session.username, 'SEAT_OUT', `Player ${player.membership_id}`);
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'SEAT_OUT', `Player ${player.membership_id}`);
         res.json({ success: true, hours: parseFloat(hours.toFixed(2)), points: parseFloat(points.toFixed(2)), new_tier: tierInfo.tier_name });
 
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }

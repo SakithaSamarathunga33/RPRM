@@ -12,10 +12,10 @@ interface DashboardTabProps {
 export default function DashboardTab({ data, loading, date, onDateChange }: DashboardTabProps) {
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center flex-wrap gap-2">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard</h2>
-                <div className="flex items-center gap-2">
-                    <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="w-[180px]" />
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Dashboard</h2>
+                <div className="w-full sm:w-auto">
+                    <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="w-full sm:w-[180px] min-h-[44px] touch-manipulation" />
                 </div>
             </div>
             {loading ? (

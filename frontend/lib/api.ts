@@ -218,7 +218,7 @@ export function cashout(body: { player_session_id: number; amount: string | numb
     });
 }
 
-export function createExpense(body: { amount: string | number; category: string; notes?: string; date: string }, opts?: ApiOptions) {
+export function createExpense(body: { amount: string | number; category: string; notes?: string; date: string; player_id?: string | number }, opts?: ApiOptions) {
     return request<{ success: boolean; error?: string }>('/api/transactions/expense', {
         method: 'POST',
         body: JSON.stringify(body),

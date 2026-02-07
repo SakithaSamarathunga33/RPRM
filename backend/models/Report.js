@@ -125,7 +125,7 @@ class ReportModel {
     }
 
     static async getAuditLog() {
-        return await AuditLog.find().sort({ _id: -1 }).limit(200);
+        return await AuditLog.find().sort({ _id: -1 }).limit(200).lean();
     }
 }
 

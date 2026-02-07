@@ -29,7 +29,7 @@ exports.createPlayer = async (req, res) => {
     try {
         const result = await Player.create(req.body, req.session.user_id);
 
-        logAudit(req.session.user_id, req.session.username, 'CREATE_PLAYER', `Player ${result.membership_id} - ${req.body.name}`);
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'CREATE_PLAYER', `Player ${result.membership_id} - ${req.body.name}`);
         res.json({ success: true, player_id: result.insertId, membership_id: result.membership_id });
     } catch (e) {
         if (e.code === 'ER_DUP_ENTRY') return res.json({ success: false, error: 'Membership ID already exists' });
@@ -58,7 +58,7 @@ exports.updatePlayer = async (req, res) => {
             }
 
             if (changes.length > 0) {
-                await logAudit(req.session.user_id, req.session.username, 'UPDATE_PLAYER', `Updated player ${oldPlayer.name} (${oldPlayer.membership_id}): ${changes.join(', ')}`);
+                await logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'UPDATE_PLAYER', `Updated player ${oldPlayer.name} (${oldPlayer.membership_id}): ${changes.join(', ')}`);
             }
         }
 

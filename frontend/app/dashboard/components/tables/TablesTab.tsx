@@ -123,14 +123,14 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
     };
 
     return (
-        <section className="bg-white rounded-xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-5 flex-wrap gap-2">
-                <h2 className="text-xl text-primary">Table Management</h2>
-                <div className="flex gap-2 items-center">
-                    <input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="px-3 py-2 border-2 border-slate-200 rounded-md text-sm" />
+        <section className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-5 gap-3">
+                <h2 className="text-lg sm:text-xl text-primary">Table Management</h2>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="w-full sm:w-auto px-3 py-2.5 border-2 border-slate-200 rounded-md text-base sm:text-sm min-h-[44px] touch-manipulation" />
                     <button
                         type="button"
-                        className="px-4 py-2 rounded-md text-sm font-semibold bg-accent text-white hover:opacity-90"
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-md text-sm font-semibold bg-accent text-white hover:opacity-90 min-h-[44px] touch-manipulation"
                         onClick={() => {
                             setModal(<OpenTableForm onClose={() => setModal(null)} onOpen={async (d: any) => {
                                 const res = await openTable({ session_date: date, ...d }, authOpts);
@@ -155,7 +155,7 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
             ) : data.tables.length === 0 ? (
                 <p className="text-center text-black py-10">No tables for this date. Click "+ Open New Table" to start.</p>
             ) : (
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4">
                     {data.tables.map((t: any) => {
                         const game = t.game_type + (t.plo_variant ? ` ${t.plo_variant}-Card` : '');
                         return (
@@ -179,12 +179,12 @@ export default function TablesTab({ data, loading, date, onDateChange, api, allC
                                 <div className="flex gap-1.5 flex-wrap">
                                     {t.status === 'open' ? (
                                         <>
-                                            <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-accent text-white hover:opacity-90" onClick={() => manageTable(t.id)}>📋 Manage</button>
-                                            <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-success text-white hover:opacity-90" onClick={() => showSeatInModal(t.id, t.table_name)}>+ Seat Player</button>
-                                            <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-danger text-white hover:opacity-90" onClick={() => showCloseTableModal(t.id, t.table_name)}>Close Table</button>
+                                            <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-accent text-white hover:opacity-90 min-h-[44px] touch-manipulation" onClick={() => manageTable(t.id)}>📋 Manage</button>
+                                            <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-success text-white hover:opacity-90 min-h-[44px] touch-manipulation" onClick={() => showSeatInModal(t.id, t.table_name)}>+ Seat Player</button>
+                                            <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-danger text-white hover:opacity-90 min-h-[44px] touch-manipulation" onClick={() => showCloseTableModal(t.id, t.table_name)}>Close Table</button>
                                         </>
                                     ) : (
-                                        <button type="button" className="px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-200 hover:bg-slate-300" onClick={() => manageTable(t.id)}>📋 View Details</button>
+                                        <button type="button" className="px-3 py-2 rounded-md text-xs font-semibold bg-slate-200 hover:bg-slate-300 min-h-[44px] touch-manipulation" onClick={() => manageTable(t.id)}>📋 View Details</button>
                                     )}
                                 </div>
                             </div>

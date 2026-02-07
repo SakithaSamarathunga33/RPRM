@@ -33,11 +33,15 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
         }
     };
 
+    const inputBase = 'w-full border rounded-md px-3 py-2.5 sm:py-2 outline-none text-base sm:text-sm transition-colors min-h-[44px] sm:min-h-0 touch-manipulation';
+    const inputError = 'border-red-500 focus:ring-2 focus:ring-red-200';
+    const inputNormal = 'border-slate-300 focus:ring-2 focus:ring-primary/50';
+
     return (
-        <div className="bg-white rounded-xl p-6 min-w-[500px] max-w-[600px] shadow-xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-2 mb-6 text-primary">
-                <span className="text-2xl">🎰</span>
-                <h3 className="text-xl font-bold">Open New Table</h3>
+        <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-[95vw] sm:min-w-[500px] sm:max-w-[600px] shadow-xl animate-in fade-in zoom-in-95 duration-200 max-h-[95vh] overflow-y-auto">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6 text-primary">
+                <span className="text-xl sm:text-2xl">🎰</span>
+                <h3 className="text-lg sm:text-xl font-bold">Open New Table</h3>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -52,7 +56,7 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
                             setD({ ...d, table_name: e.target.value });
                             if (errors.table_name) setErrors({ ...errors, table_name: '' });
                         }}
-                        className={`w-full border rounded-md px-3 py-2 outline-none text-sm transition-colors ${errors.table_name ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
+                        className={`${inputBase} ${errors.table_name ? inputError : inputNormal}`}
                         placeholder="e.g. Table 1, VIP Table"
                     />
                     {errors.table_name && <p className="text-xs text-red-500 mt-1">{errors.table_name}</p>}
@@ -66,7 +70,7 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
                     <select
                         value={d.game_type}
                         onChange={(e) => setD({ ...d, game_type: e.target.value })}
-                        className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none text-sm bg-white"
+                        className={`${inputBase} bg-white`}
                     >
                         <option value="NLH">No Limit Hold'em (NLH)</option>
                         <option value="PLO">Pot Limit Omaha (PLO)</option>
@@ -74,7 +78,7 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
                 </div>
 
                 {/* Blinds */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-sm font-semibold text-slate-600 mb-1">
                             Small Blind <span className="text-red-500">*</span>
@@ -86,7 +90,7 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
                                 setD({ ...d, small_blind: parseFloat(e.target.value) });
                                 if (errors.small_blind) setErrors({ ...errors, small_blind: '' });
                             }}
-                            className={`w-full border rounded-md px-3 py-2 outline-none text-sm transition-colors ${errors.small_blind ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
+                            className={`${inputBase} ${errors.small_blind ? inputError : inputNormal}`}
                         />
                         {errors.small_blind && <p className="text-xs text-red-500 mt-1">{errors.small_blind}</p>}
                     </div>
@@ -101,7 +105,7 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
                                 setD({ ...d, big_blind: parseFloat(e.target.value) });
                                 if (errors.big_blind) setErrors({ ...errors, big_blind: '' });
                             }}
-                            className={`w-full border rounded-md px-3 py-2 outline-none text-sm transition-colors ${errors.big_blind ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
+                            className={`${inputBase} ${errors.big_blind ? inputError : inputNormal}`}
                         />
                         {errors.big_blind && <p className="text-xs text-red-500 mt-1">{errors.big_blind}</p>}
                     </div>
@@ -117,7 +121,7 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
                             setD({ ...d, start_time: e.target.value });
                             if (errors.start_time) setErrors({ ...errors, start_time: '' });
                         }}
-                        className={`w-full border rounded-md px-3 py-2 outline-none text-sm transition-colors ${errors.start_time ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-300 focus:ring-2 focus:ring-primary/50'}`}
+                        className={`${inputBase} ${errors.start_time ? inputError : inputNormal}`}
                     />
                     {errors.start_time && <p className="text-xs text-red-500 mt-1">{errors.start_time}</p>}
                 </div>
@@ -128,15 +132,15 @@ export default function OpenTableForm({ onClose, onOpen }: { onClose: () => void
                     <textarea
                         value={d.notes}
                         onChange={(e) => setD({ ...d, notes: e.target.value })}
-                        className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none text-sm h-20 resize-none"
+                        className="w-full border border-slate-300 rounded-md px-3 py-2.5 sm:py-2 focus:ring-2 focus:ring-primary/50 outline-none text-base sm:text-sm min-h-[80px] sm:h-20 resize-none touch-manipulation"
                         placeholder="Optional"
                     />
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 justify-end pt-2">
-                    <button type="button" className="px-5 py-2.5 rounded-md font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200" onClick={onClose}>Cancel</button>
-                    <button type="submit" className="px-5 py-2.5 rounded-md font-semibold bg-[#2563EB] text-white hover:bg-blue-700 shadow-sm">Open Table</button>
+                <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-2">
+                    <button type="button" className="w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-md font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 min-h-[44px] sm:min-h-0 touch-manipulation" onClick={onClose}>Cancel</button>
+                    <button type="submit" className="w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-md font-semibold bg-[#2563EB] text-white hover:bg-blue-700 shadow-sm min-h-[44px] sm:min-h-0 touch-manipulation">Open Table</button>
                 </div>
             </form>
         </div>

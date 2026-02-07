@@ -37,15 +37,15 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col justify-center items-center bg-slate-100 font-sans">
-            <div className="bg-white rounded-2xl p-12 w-[420px] max-w-[90vw] text-center shadow-lg border border-slate-200">
-                <img src="/static/images/regulus_logo.png" alt="Regulus" className="h-24 mx-auto mb-4" />
-                <h1 className="text-primary text-[22px] mb-1 tracking-wide">POKER ROOM MANAGER</h1>
-                <p className="text-slate-500 text-[13px] mb-8">Regulus Compliance Solutions Private Limited</p>
+        <div className="min-h-screen min-h-dvh flex flex-col justify-center items-center bg-slate-100 font-sans p-4 safe-area-padding">
+            <div className="bg-white rounded-2xl p-6 sm:p-12 w-full max-w-[420px] text-center shadow-lg border border-slate-200">
+                <img src="/static/images/regulus_logo.png" alt="Regulus" className="h-20 sm:h-24 mx-auto mb-4" />
+                <h1 className="text-primary text-lg sm:text-[22px] mb-1 tracking-wide">POKER ROOM MANAGER</h1>
+                <p className="text-slate-500 text-xs sm:text-[13px] mb-6 sm:mb-8">Regulus Compliance Solutions Private Limited</p>
                 {error && (
                     <div className="bg-red-100 text-red-700 px-3 py-2.5 rounded-md mb-4 text-sm">{error}</div>
                 )}
-                <div className="mb-5 text-left">
+                <div className="mb-4 sm:mb-5 text-left">
                     <label className="block text-slate-600 text-[13px] font-semibold mb-1.5">Username</label>
                     <input
                         type="text"
@@ -54,10 +54,10 @@ export default function LoginPage() {
                         onKeyDown={handleKey}
                         placeholder="Enter username"
                         autoFocus
-                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-[15px] outline-none focus:border-accent transition"
+                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-base outline-none focus:border-accent transition min-h-[48px] touch-manipulation"
                     />
                 </div>
-                <div className="mb-5 text-left">
+                <div className="mb-4 sm:mb-5 text-left">
                     <label className="block text-slate-600 text-[13px] font-semibold mb-1.5">Password</label>
                     <input
                         type="password"
@@ -65,18 +65,18 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         onKeyDown={handleKey}
                         placeholder="Enter password"
-                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-[15px] outline-none focus:border-accent transition"
+                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg text-base outline-none focus:border-accent transition min-h-[48px] touch-manipulation"
                     />
                 </div>
                 <button
                     type="button"
                     onClick={doLogin}
-                    className="w-full py-3.5 bg-primary text-white border-0 rounded-lg text-base font-bold cursor-pointer tracking-wide hover:opacity-95"
+                    className="w-full py-3.5 min-h-[48px] bg-primary text-white border-0 rounded-lg text-base font-bold cursor-pointer tracking-wide hover:opacity-95 touch-manipulation"
                 >
                     LOGIN
                 </button>
             </div>
-            <div className="text-slate-400 text-[11px] mt-8 text-center">
+            <div className="text-slate-400 text-[11px] mt-6 sm:mt-8 text-center px-2">
                 © 2026 Regulus Compliance Solutions Private Limited. All Rights Reserved.<br />Designed by Jim Ramm
             </div>
         </div>

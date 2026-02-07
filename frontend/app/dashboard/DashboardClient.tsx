@@ -266,29 +266,31 @@ export default function DashboardClient() {
     const allowedTabs = getAllowedTabs(user.role);
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <header className="bg-primary text-white px-6 py-3 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <img src="/static/images/regulus_logo.png" alt="Regulus" className="h-14 rounded-md" />
-                    <div>
-                        <h1 className="text-lg font-bold tracking-wide">REGULUS POKER ROOM MANAGER <span className="text-sm font-normal opacity-80">v1.0</span></h1>
-                        <span className="text-sm opacity-80">{data?.settings?.poker_room_name ? `${data.settings.poker_room_name} — ${data.settings.casino_name}` : 'Poker Room Manager'}</span>
+        <div className="min-h-screen min-h-dvh flex flex-col">
+            <header className="bg-primary text-white px-3 sm:px-6 py-2 sm:py-3 flex flex-wrap justify-between items-center gap-2">
+                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                    <img src="/static/images/regulus_logo.png" alt="Regulus" className="h-10 sm:h-14 rounded-md shrink-0" />
+                    <div className="min-w-0">
+                        <h1 className="text-sm sm:text-lg font-bold tracking-wide truncate">REGULUS POKER ROOM MANAGER <span className="text-xs sm:text-sm font-normal opacity-80">v1.0</span></h1>
+                        <span className="text-xs sm:text-sm opacity-80 truncate block">{data?.settings?.poker_room_name ? `${data.settings.poker_room_name} — ${data.settings.casino_name}` : 'Poker Room Manager'}</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
-                    <span>{user.full_name}</span>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/20">{user.role.toUpperCase()}</span>
-                    <button type="button" className="px-4 py-2 rounded-md text-sm font-semibold bg-white/20 hover:bg-white/30 transition" onClick={() => doLogout()}>Logout</button>
+                <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto ml-auto min-h-[32px] sm:min-h-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <span className="truncate max-w-[100px] sm:max-w-none text-xs sm:text-sm">{user.full_name}</span>
+                        <span className="px-2 sm:px-2.5 py-1 rounded-full text-xs font-bold bg-white/20 shrink-0">{user.role.toUpperCase()}</span>
+                    </div>
+                    <button type="button" className="py-1.5 px-2.5 rounded-md text-xs font-semibold bg-white/20 hover:bg-white/30 transition touch-manipulation shrink-0 sm:py-2 sm:px-4 sm:text-sm sm:min-h-[44px]" onClick={() => doLogout()}>Logout</button>
                 </div>
             </header>
-            <Tabs value={section} onValueChange={setSection} className="flex flex-col flex-1">
-                <div className="bg-white px-6 py-2 border-b-2 border-slate-200">
-                    <TabsList className="h-auto p-0 bg-transparent gap-1 flex-wrap justify-start">
+            <Tabs value={section} onValueChange={setSection} className="flex flex-col flex-1 min-h-0">
+                <div className="bg-white px-2 sm:px-6 py-2 border-b-2 border-slate-200 overflow-x-auto">
+                    <TabsList className="h-auto p-0 bg-transparent gap-1 flex-nowrap sm:flex-wrap justify-start min-w-max sm:min-w-0">
                         {allowedTabs.map((s) => (
                             <TabsTrigger
                                 key={s}
                                 value={s}
-                                className="px-4 py-2 rounded-md text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white text-slate-600 hover:bg-slate-100 hover:text-primary transition bg-transparent shadow-none border-none"
+                                className="px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-white text-slate-600 hover:bg-slate-100 hover:text-primary transition bg-transparent shadow-none border-none shrink-0 min-h-[44px] touch-manipulation"
                             >
                                 {s === 'dashboard' && '📊 Dashboard'}
                                 {s === 'tables' && '🎰 Tables'}
@@ -312,11 +314,11 @@ export default function DashboardClient() {
                     </div>
                 )}
                 {modal && (
-                    <div className="fixed inset-0 bg-black/50 z-[1000] flex justify-center items-center" onClick={() => setModal(null)}>
-                        <div onClick={(e) => e.stopPropagation()}>{modal}</div>
+                    <div className="fixed inset-0 bg-black/50 z-[1000] flex justify-center items-center p-4" onClick={() => setModal(null)}>
+                        <div className="w-full max-w-4xl flex justify-center" onClick={(e) => e.stopPropagation()}>{modal}</div>
                     </div>
                 )}
-                <main className="flex-1 w-full p-5 box-border">
+                <main className="flex-1 w-full p-3 sm:p-5 box-border overflow-x-hidden">
                     {allowedTabs.includes('dashboard') && (
                         <TabsContent value="dashboard" className="m-0 space-y-4 outline-none">
                             <DashboardTab data={data} loading={loading} date={dates.dashboard} onDateChange={(date) => setDates((d) => ({ ...d, dashboard: date }))} />

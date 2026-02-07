@@ -18,7 +18,7 @@ exports.createUser = async (req, res) => {
 
         const newUser = await User.create(req.body);
         if (req.session.user_id) {
-            await logAudit(req.session.user_id, req.session.username, 'CREATE_USER', `Created user ${req.body.username} (${req.body.role})`);
+            await logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'CREATE_USER', `Created user: ${req.body.username}, full name: ${req.body.full_name}, role: ${req.body.role}`);
         }
         res.json({ success: true });
     } catch (e) {
@@ -40,7 +40,7 @@ exports.updatePassword = async (req, res) => {
     try {
         await User.updatePassword(uid, req.body.new_password);
         if (req.session.user_id) {
-            await logAudit(req.session.user_id, req.session.username, 'UPDATE_PASSWORD', `Updated password for user ID ${uid}`);
+            await logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'UPDATE_PASSWORD', `Updated password for user ID ${uid}`);
         }
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
@@ -52,9 +52,8 @@ exports.updateUser = async (req, res) => {
         await User.update(uid, req.body);
 
         if (req.session.user_id) {
-            // Sanitize log - remove password or large objects
             const { password, ...safeData } = req.body;
-            await logAudit(req.session.user_id, req.session.username, 'UPDATE_USER', `Updated user ID ${uid} with data: ${JSON.stringify(safeData)}`);
+            await logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'UPDATE_USER', `Updated user ID ${uid}: ${JSON.stringify(safeData)}`);
         }
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
@@ -65,7 +64,7 @@ exports.deleteUser = async (req, res) => {
     try {
         await User.delete(uid);
         if (req.session.user_id) {
-            await logAudit(req.session.user_id, req.session.username, 'DELETE_USER', `Deleted user ID ${uid}`);
+            await logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'DELETE_USER', `Deleted user ID ${uid}`);
         }
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }

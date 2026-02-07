@@ -145,6 +145,8 @@ const DayClosingSchema = new mongoose.Schema({
 const AuditLogSchema = new mongoose.Schema({
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     username: String,
+    actor_full_name: { type: String, default: '' }, // full name of the person who performed the action (for display in User column)
+    actor_role: { type: String, default: '' },
     action: String,
     details: String,
     timestamp: Date

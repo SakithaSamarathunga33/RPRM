@@ -1,6 +1,8 @@
 const Transaction = require('../models/Transaction');
 const Table = require('../models/Table');
 const Setting = require('../models/Setting');
+const { logAudit } = require('../models/Audit');
+const Player = require('../models/Player');
 
 exports.getAllTransactions = async (req, res) => {
     try {
@@ -41,6 +43,9 @@ exports.buyIn = async (req, res) => {
 
         await Table.updateBuyIn(ps.id, amtLkr);
 
+        const player = await Player.findById(ps.player_id);
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'BUYIN', `Player ${player?.membership_id || ps.player_id}: ${data.amount} ${data.currency_code} (${amtLkr} LKR)${data.notes ? ` — ${data.notes}` : ''}`);
+
         res.json({ success: true, amount_lkr: amtLkr, fx_rate: fx });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 };
@@ -75,6 +80,9 @@ exports.cashOut = async (req, res) => {
 
         await Table.updateCashOut(ps.id, amtLkr);
 
+        const player = await Player.findById(ps.player_id);
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'CASHOUT', `Player ${player?.membership_id || ps.player_id}: ${data.amount} ${data.currency_code} (${amtLkr} LKR)${data.notes ? ` — ${data.notes}` : ''}`);
+
         res.json({ success: true, amount_lkr: amtLkr, fx_rate: fx });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 };
@@ -82,16 +90,28 @@ exports.cashOut = async (req, res) => {
 exports.createExpense = async (req, res) => {
     try {
         const data = req.body;
+        const playerId = data.player_id || undefined;
         await Transaction.create({
             type: 'expense',
+            player_id: playerId,
             amount: data.amount,
-            amount_lkr: data.amount, // Expenses usually LKR? Code in server.js implies LKR input
+            amount_lkr: data.amount,
             currency_code: 'LKR',
             fx_rate: 1,
             category: data.category,
             notes: data.notes,
             date: data.date
         }, req.session.user_id);
+
+        let detailStr = `${data.amount} LKR — ${data.category || 'expense'}`;
+        if (playerId) {
+            const player = await Player.findById(playerId);
+            if (player) detailStr += ` [Player: ${player.membership_id} ${player.name}]`;
+        }
+        if (data.notes) detailStr += `: ${data.notes}`;
+        detailStr += ` (date: ${data.date})`;
+        logAudit(req.session.user_id, req.session.username, req.session.full_name, req.session.role, 'RECORD_EXPENSE', detailStr);
+
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 };

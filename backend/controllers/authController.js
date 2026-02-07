@@ -34,7 +34,7 @@ exports.login = async (req, res) => {
                     }
 
                     User.updateLastLogin(user.id);
-                    logAudit(user.id, user.username, 'LOGIN');
+                    logAudit(user.id, user.username, user.full_name, user.role, 'LOGIN');
 
                     const sessionToken = createJwt({ id: user.id, username: user.username, full_name: user.full_name, role: user.role });
                     res.json({
@@ -58,12 +58,14 @@ exports.logout = (req, res) => {
     const uname = req.session.username;
     const reason = req.body?.reason || 'manual';
 
+    const actorRole = req.session.role;
+    const actorFullName = req.session.full_name;
     req.session.destroy((err) => {
         if (uid) {
             if (reason === 'idle_timeout') {
-                logAudit(uid, uname, 'AUTO_LOGOUT', 'Session expired due to inactivity');
+                logAudit(uid, uname, actorFullName, actorRole, 'AUTO_LOGOUT', 'Session expired due to inactivity');
             } else {
-                logAudit(uid, uname, 'LOGOUT');
+                logAudit(uid, uname, actorFullName, actorRole, 'LOGOUT');
             }
         }
         res.json({ success: true });
